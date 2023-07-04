@@ -1,0 +1,12 @@
+CC = g++
+CFLAGS = -std=c++17 -Wall -Wpedantic -Wextra -Wsign-conversion -Wconversion -pedantic-errors -Werror -lm
+
+output : main.o Scalar.o
+	${CC} ${CFLAGS} main.o Scalar.o -o output
+
+main.o : main.cc
+	${CC} ${CFLAGS} -c main.cc
+
+
+clean :
+	rm *.o output
