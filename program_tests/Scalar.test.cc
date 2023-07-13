@@ -23,6 +23,16 @@ int main()
   s_def.setValue(2.0);
   assert(s_def.getValue() == 2.0);
 
+  // Test that the operations are working as they should.
+  Scalar x{ 3.0 };
+  Scalar y{ 6.0 };
+
+  assert( x.add(y).getValue() == 9.0 && "Addition not working properly" );
+  assert( x.subtract(y).getValue() == -3.0 && "Subtraction not working properly");
+  assert( x.multiply(y).getValue() == 18.0 && "Multiplication not working properly");
+  assert( x.divide(y).getValue() == 0.5 && "Division not working properly");
+
+  
   // Add more tests here pertaining only to the Scalar object
   
   return 0;

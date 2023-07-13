@@ -6,22 +6,23 @@
 
 class Scalar
 {
- private:
+private:
   double m_value {};
   static constexpr int m_dimension{ 0 };
-
- public:
-  // Constructor takes a value for the scalar. Default constructor will have a value of zero.
-  Scalar(double value=0.0);   // Note that default values only go in the header file.
-
-  // Function that sets the value of the Scalar object.
+  
+public:
+  Scalar(double value=0.0);
+  
   void setValue(double value) { m_value = value; };
-
-  // Returns the value of the scalar
   double getValue() const { return m_value; };
-
-  // Returns the dimension of a scalar, which trivialli is 0.
+  
   constexpr int getDimension() const { return m_dimension; };
+  
+  Scalar add(const Scalar& rscalar) const;
+  Scalar subtract(const Scalar& subtrahend) const;
+  Scalar multiply(const Scalar& factor) const;
+  Scalar divide(const Scalar& denominator) const;
+  
 };
 
 #endif
