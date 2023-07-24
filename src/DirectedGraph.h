@@ -132,6 +132,12 @@ public:
    */
   void addEdgeElements(const T& tail, const T& head);
 
+  /**
+   * @brief Adds two nodes and an edge between them.
+   * @param from element representing the tail.
+   * @param to   element representing the head.
+   */
+  void addConnection(const T& from, const T& to);
   
   /**
    * Prints the element in each node as well as each node's inputs and consumers.
@@ -270,6 +276,15 @@ template <typename T>
 void DirectedGraph<T>::addEdgeElements(const T& tail, const T& head)
 {
   addEdge( Edge<T>{tail, head} );
+}
+
+
+template <typename T>
+void DirectedGraph<T>::addConnection(const T& from, const T& to)
+{
+  addNode(from);
+  addNode(to);
+  addEdgeElements(from, to);
 }
 
 
