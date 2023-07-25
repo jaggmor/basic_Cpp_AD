@@ -9,10 +9,14 @@
 #include "DirectedGraph.h"
 
 #include <memory>
+#include <string_view>
+#include <iostream>
 
 
 class ScalarAdd : public OperationBinary
 {
+private:
+  static constexpr std::string_view m_name{"ScalarAdd"};
 public:
   /**
    * @brief Operator for the functor
@@ -54,14 +58,29 @@ public:
    */
   void op(const Scalar& input1, const Scalar& input2, Scalar& variable) const
   { variable.setValue(input1.add(input2)); }
+
   
+  std::ostream& print(std::ostream& out) const override
+  {
+    out << m_name;
+    return out;
+  }
 };
 
 
 class Input : public OperationUnary
 {
+private:
+  static constexpr std::string_view m_name{"Input"};
+public:
   void op(const Variable& input, Variable& variable)
   { /* Do nothing since this is the input. */ }
+
+  std::ostream& print(std::ostream& out) const override
+  {
+    out << m_name;
+    return out;
+  }
 };
 
 

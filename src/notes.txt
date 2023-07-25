@@ -1,0 +1,33 @@
+
+------------
+Design notes
+------------
+
+DirectedGraph.h
+
+// This header contains methods that are used to construct a directed computational graph.
+// We want to be able to do the following things:
+//    - O(1) get the descendants/consumers of any node.
+//    - O(1) get the ancestors/inputs of any node.
+//    - Add nodes along with edges to the graph from the public.
+//      (The intention is that this will be used by the operations classes to add variables to
+//      a computational graph using
+//         Add(graph, variable1, variable2);
+//      where Add will add a resulting varible3 to the graph. This could be achieved by just having
+//      the graph be able to add nodes and edges.)
+//    - Given a reference to ANY destination nodes and source nodes we should be able to prune
+//      the graph to only contain edges and nodes that participate in the path between source and
+//      destination.
+//    * NOTE - really the structures in this class should be templatized to allow for such graphs
+//      between any objects.
+
+
+// The directed graph class that will be used to create the computaional graph. Since a
+// computational graph really is just a normal graph where the nodes are variables.
+// Implementation:
+// The idea is that a graph consists of a map of nodes where each node is a list of its inputs
+// and consumers. Hence the graph will have a private Node struct where each node contains two
+// vectors with consumers and inputs. These nodes are all put in an std::map for probably
+// easy access.
+// Note that the nodes in the graph copy given elements to it. Hence if we want a graph of many
+// large object we should send in obj* as a parameter.

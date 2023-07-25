@@ -56,6 +56,21 @@ public:
   const Operation& getOperation() const
   { return m_operation; }
 
+
+  // Overloaded operator<<
+  friend std::ostream& operator<<(std::ostream& out, const Variable& v)
+  {
+    return v.print(out);
+  }
+
+  
+  // We'll rely on member function print() to do the actual printing
+  // Because print() is a normal member function, it can be virtualized
+  virtual std::ostream& print(std::ostream& out) const
+  {
+    out << "Variable<" << m_operation << '>';
+    return out;
+  }
 };
 
 #endif

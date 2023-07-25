@@ -8,7 +8,7 @@ add_library(lib_Autodiff STATIC
 
 # Below we may add out specific compiler flags for the compilation
 # This can be done for any compile target, such as add_library, add_executable
-target_compile_features(lib_Autodiff PRIVATE cxx_std_17)
+#target_compile_features(lib_Autodiff PRIVATE cxx_std_17)
 target_compile_options(lib_Autodiff PRIVATE -Wall)
 
 

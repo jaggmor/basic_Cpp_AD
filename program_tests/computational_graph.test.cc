@@ -32,8 +32,13 @@ void buildAddGraph()
   auto b{ std::make_unique<Scalar>(input, 4.0) };
   auto c{ scalarAdd(*a, *b, graph) };
   put_away(std::move(a)); put_away(std::move(b)); put_away(std::move(c));
+
+  auto customPrint{ [] (Variable* varptr) -> void
+  {
+    std::cout << *varptr;
+  }};
   
-  graph.printGraph();
+  graph.printGraph(customPrint);
 }
 
 
@@ -42,14 +47,3 @@ int main()
   buildAddGraph();
   return 0;
 }
-
-
-
-/*
-static void addBinaryConnection(DirectedGraph<Variable*>& graph,
-				const Variable* from1, const Variable* from2, const Variable* to)
-{
-  graph.addConnection(from1, to);
-  graph.addConnection(from2, to);
-}
-*/

@@ -6,7 +6,7 @@
 #include <vector>
 #include <map>
 #include <cassert>
-
+#include <functional>
 #include <algorithm>
 #include <iterator>
 
@@ -145,6 +145,11 @@ public:
    */
   void printGraph() const;
 
+  /**
+   * Prints the element in each node as well as each node's inputs and consumers.
+   * @brief Prints the graph according to some element rule.
+   */
+  void printGraph(const std::function<void(T)> customPrintFcn) const;
   
   /**
    * Removes a node and all connecting edges from the graph.
@@ -222,6 +227,30 @@ void DirectedGraph<T>::printGraph() const
       for (const auto& consumer : pair.second.consumers)
 	{
 	  std::cout << consumer << ' ';
+	}
+      std::cout << '\n';
+    }
+}
+
+
+template <typename T>
+void DirectedGraph<T>::printGraph(const std::function<void(T)> customPrintFcn) const
+{
+  for (const auto& pair : m_graphMap)
+    {
+      // Iterate over the Node values.
+      for (const auto& input : pair.second.inputs)
+	{
+	  customPrintFcn(input);
+	  std::cout << ' ';
+	}
+      std::cout << "-- (";
+      customPrintFcn(pair.first);
+      std::cout << ") --> ";
+      for (const auto& consumer : pair.second.consumers)
+	{
+	  customPrintFcn(consumer);
+	  std::cout << ' ';
 	}
       std::cout << '\n';
     }

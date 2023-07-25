@@ -16,11 +16,24 @@
 #ifndef OPERATION_H
 #define OPERATION_H
 
+#include <iostream>
+
 class Operation
 {
 public:
   
   friend bool operator==(const Operation& op1, const Operation& op2);
+
+  friend std::ostream& operator<<(std::ostream& out, const Operation& op)
+  {
+    return op.print(out);
+  }
+
+  virtual std::ostream& print(std::ostream& out) const
+  {
+    out << "Operation";
+    return out;
+  }
 };
 
 // May want to move this to other file, although I think it should be fine here as long as

@@ -26,7 +26,8 @@ public:
   double subtract(const Scalar& subtrahend) const;
   double multiply(const Scalar& factor) const;
   double divide(const Scalar& denominator) const;
-  
+
+  std::ostream& print(std::ostream& out) const override;
 };
 
 #endif

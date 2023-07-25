@@ -28,3 +28,9 @@ double Scalar::divide(const Scalar& denominator) const
 {
   return m_value / denominator.m_value;
 }
+
+std::ostream& Scalar::print(std::ostream& out) const
+{
+  out << "Scalar<" << this->getOperation() << '>' << '=' << m_value;
+  return out;
+}
