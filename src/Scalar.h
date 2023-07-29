@@ -4,21 +4,22 @@
 #ifndef SCALAR_H
 #define SCALAR_H
 
-#include "Variable.h"
 #include "Operation.h"
+#include "Variable.h"
+
+#include <memory>
 
 
 class Scalar : public Variable
 {
 private:
-  double m_value {};
   static constexpr int m_dimension{ 0 };
   
 public:
-  Scalar(const Operation& operation, double value=0.0);
+  Scalar(const Operation& operation, double value=0.0, bool flag=false);
   
-  void setValue(double value) { m_value = value; };
-  double getValue() const { return m_value; };
+  void setValue(double value) { *m_memory = value; };
+  double getValue() const { return *m_memory; };
   
   constexpr int getDimension() const { return m_dimension; };
   

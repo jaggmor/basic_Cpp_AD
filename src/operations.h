@@ -11,9 +11,9 @@
 #include <memory>
 #include <string_view>
 #include <iostream>
+#include <cassert>
 
-
-class ScalarAdd : public OperationBinary
+class ScalarAdd final : public OperationBinary
 {
 private:
   static constexpr std::string_view m_name{"ScalarAdd"};
@@ -56,8 +56,13 @@ public:
    * @param input1, input2 Input variable node to a binary operation in a computational graph.
    * @param variable Output variable node in a computational graph.
    */
-  void op(const Scalar& input1, const Scalar& input2, Scalar& variable) const
-  { variable.setValue(input1.add(input2)); }
+  void bop(const Variable& input1, const Variable& input2, Variable& variable) const override
+  {
+    assert(input1.getLengths().size() == 0 && input2.getLengths().size() == 0 &&  variable.getLengths().size() == 0 && "Variables are not scalars");
+    double value1{ *input1.getMemoryPtr() };
+    double value2{ *input2.getMemoryPtr() };
+    *variable.getMemoryPtr() = value1 + value2;
+  }
 
   
   std::ostream& print(std::ostream& out) const override
@@ -73,7 +78,7 @@ class Input : public OperationUnary
 private:
   static constexpr std::string_view m_name{"Input"};
 public:
-  void op(const Variable& input, Variable& variable)
+  void op(Variable& variable)
   { /* Do nothing since this is the input. */ }
 
   std::ostream& print(std::ostream& out) const override

@@ -4,6 +4,8 @@
 
 #include "Operation.h"
 #include "Variable.h"
+#include "Exceptions.h"
+#include "Variable.h"
 
 /**
  * Interface class for a unary operatior. The operator is implemented as a functor that is both
@@ -14,7 +16,16 @@
 class OperationUnary : public Operation
 {  
  public:
+  virtual ~OperationUnary() override = default;
 
+  virtual void uop(const Variable& input, Variable& variable) const override
+  {
+    throw InvalidOperationException("Unsupported operation Variable -> Variable");
+  }
+
+  bool isUnary() const override { return true; }
+  
+  bool isBinary() const override { return false; }
 };
 
 

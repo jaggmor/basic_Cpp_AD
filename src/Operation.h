@@ -16,11 +16,16 @@
 #ifndef OPERATION_H
 #define OPERATION_H
 
+#include "Exceptions.h"
 #include <iostream>
 
+// This is a forward declation of Variable since including variable here will cause a circular dependency.
+class Variable;
+
 class Operation
-{
+{ 
 public:
+  virtual ~Operation() = default;
   
   friend bool operator==(const Operation& op1, const Operation& op2);
 
@@ -33,6 +38,25 @@ public:
   {
     out << "Operation";
     return out;
+  }
+
+  virtual bool isUnary() const
+  {
+    throw false;
+  }
+  virtual bool isBinary() const
+  {
+    throw false;
+  }
+
+  virtual void bop(const Variable& input1, const Variable& input2, Variable& variable) const
+  {
+    throw BaseException("Never should have come here... Base class function accessed.");
+  }
+
+  virtual void uop(const Variable& input, Variable& variable) const
+  {
+    throw BaseException("Never should have come here... Base class function accessed.");
   }
 };
 

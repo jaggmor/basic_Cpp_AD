@@ -2,15 +2,19 @@
 // Unit test for Scalar.h
 
 #include "Scalar.h"
-#include <cassert>
 #include "operations.h"
+#include "Variable.h"
+
+#include <memory>
+#include <cassert>
+#include <vector>
 
 int main()
 {
-  constexpr Input input{};
+  const Input input{};
 
   // We try both a default constructor and the defined one.
-  Scalar s_dea{input};
+  Scalar s_dea{input, 0.0};
   Scalar s_def{input, 1.};
 
   // Note that the best practice is to use assertions for cases that should
@@ -28,12 +32,43 @@ int main()
   // Test that the operations are working as they should.
   Scalar x{ input, 3.0 };
   Scalar y{ input, 6.0 };
-
+  
   assert( x.add(y) == 9.0 && "Addition not working properly" );
   assert( x.subtract(y) == -3.0 && "Subtraction not working properly");
   assert( x.multiply(y) == 18.0 && "Multiplication not working properly");
   assert( x.divide(y) == 0.5 && "Division not working properly");
 
+  // Test that the flag is working correctly
+  x.setTrue();
+  y.setFalse();
+
+  assert(x && "x should evaluate to true");
+  assert(!y && "y should evaluate to false");
+
+  // Test that the memory handling from Variable.h works correctly.
+  auto ptr{x.getMemoryPtr()};
+  assert(*ptr == x.getValue() && "Dereferenced raw pointer should point to the same value as function");
+
+  std::unique_ptr<double> new_memory{ std::make_unique<double>(5.0)};
+  std::vector<int> new_lengths{};
+  x.overwriteMemory(std::move(new_memory), new_lengths);
+  assert(x.getValue() == 5.0 && "Memory was not successfully copied into the variable.");
+
+  // Test that the lengths of all these Scalars are all 0.
+  assert(x.getLengths().size() == x.getDimension() && y.getLengths().size() == y.getDimension() && "Lengths should be empty since it has dim=0.");
+
+  // Test that std::move will not move a heap allocated Scalar from its initial position.
+  std::unique_ptr<Scalar> z{ std::make_unique<Scalar>(input, 42.0) };
+  Variable* old_ptr{ z.get() };
+
+  std::vector<std::unique_ptr<Variable>> vars{};
+  vars.push_back(std::move(z));
+  
+  Variable* new_ptr{vars.at(0).get()};
+
+  assert(!z && "The moved from uptr should be null");
+  assert(old_ptr == new_ptr && "With std::move the heap allocation should remain at the same spot in memory.");
+  
   // Add more tests here pertaining only to the Scalar object
   return 0;
 }
