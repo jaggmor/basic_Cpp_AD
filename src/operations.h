@@ -13,6 +13,8 @@
 #include <iostream>
 #include <cassert>
 
+using Gradient = std::vector<double>;
+
 class ScalarAdd final : public OperationBinary
 {
 private:
@@ -63,6 +65,19 @@ public:
     double value2{ *input2.getMemoryPtr() };
     *variable.getMemoryPtr() = value1 + value2;
   }
+  
+  Gradient bprop(const std::vector<Variable*>& inputs, const Variable& diff_var,  const Gradient& gradient) const override
+  {
+    assert(inputs.size() == 2);
+    assert(diff_var.getLengths().size() == 0);
+    for (auto var_ptr : inputs)
+      assert(var_ptr->getLengths().size() == 0);
+    assert(gradient.size() == 1);
+    // We should be fine!
+
+    // The gradient of a + b = y w.r.t. a or b is always 1.0.
+    return Gradient{ 1.0 * gradient[0] };
+  }
 
   
   std::ostream& print(std::ostream& out) const override
@@ -92,3 +107,4 @@ public:
 #endif
 
 // Recall that virtual functions are functions that resolve into the most derived class.
+

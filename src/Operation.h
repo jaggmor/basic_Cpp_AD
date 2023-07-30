@@ -18,9 +18,13 @@
 
 #include "Exceptions.h"
 #include <iostream>
+#include <vector>
 
 // This is a forward declation of Variable since including variable here will cause a circular dependency.
 class Variable;
+
+
+using Gradient = std::vector<double>;
 
 class Operation
 { 
@@ -55,6 +59,12 @@ public:
   }
 
   virtual void uop(const Variable& input, Variable& variable) const
+  {
+    throw BaseException("Never should have come here... Base class function accessed.");
+  }
+
+  virtual Gradient bprop(const std::vector<Variable*>& inputs, const Variable& diff_var,
+			 const Gradient& gradient) const
   {
     throw BaseException("Never should have come here... Base class function accessed.");
   }

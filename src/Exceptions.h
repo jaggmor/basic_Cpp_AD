@@ -29,5 +29,18 @@ public:
   {}
 };
 
+class BadWalkException : public std::runtime_error
+{
+public:
+  /**
+   * @brief Exception to be called when the walk over a computational graph fails.
+   * @param error String with a relevant error message.  
+   */
+  BadWalkException(const std::string& error)
+    : std::runtime_error{ error.c_str() }
+  {}
+};
+
+
 
 #endif

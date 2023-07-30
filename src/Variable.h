@@ -96,8 +96,8 @@ public:
   * @return Reference to the vector of variable references.
   */
   const std::vector<vref>& getInputs(const DirectedGraph<vref>& graph)
-  { return graph.getNodeInputs(this); }
-
+  { return graph.getNodeInputs(this); }  
+  
   /**
    * @brief Gets the operation that created the variable.
    * @return Operation
