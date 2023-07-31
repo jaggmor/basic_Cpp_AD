@@ -9,6 +9,7 @@
 #include <vector>
 #include <functional>
 #include <memory>
+#include <string>
 
 //class Operation;
 
@@ -19,9 +20,10 @@ class Variable
 private:
   // Private members are contained within the Variable object These are the creation operation and
   // the flag of the variable. These will be unmodified in derived objects and thus they are
-
   // private.
+  
   const Operation& m_operation{};
+  const std::string m_name{};
   bool m_flag{};
 
 protected:
@@ -33,8 +35,9 @@ protected:
    * @param operation The opeation that created the variable.
    * @param flag
    */
-  Variable(const Operation& operation, bool flag=false)
+  Variable(const Operation& operation, const std::string& name="", bool flag=false)
     : m_operation{ operation }
+    , m_name{ name }
     , m_flag{ flag }
   {}
 
@@ -105,6 +108,9 @@ public:
   const Operation& getOperation() const
   { return m_operation; }
 
+  const std::string& getName() const
+  { return m_name; }
+  
   void setTrue()
   { m_flag = true; }
 

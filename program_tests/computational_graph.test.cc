@@ -313,12 +313,12 @@ void buildAddGraphAndBackPropIt()
   
   DirectedGraph<Variable*> graph{};
 
-  auto x{ std::make_unique<Scalar>(input, 2.0) };
-  auto a{ std::make_unique<Scalar>(input, 3.0) };
+  auto x{ std::make_unique<Scalar>(input, 2.0, "x") };
+  auto a{ std::make_unique<Scalar>(input, 3.0, "a") };
 
   auto res1{ scalarAdd(*x, *a, graph ) };
   
-  auto b{ std::make_unique<Scalar>(input, 4.0) };
+  auto b{ std::make_unique<Scalar>(input, 4.0, "b") };
   auto res2{ scalarAdd(*b, *res1, graph) };
 
   auto res3{ scalarAdd(*res2, *x, graph)};

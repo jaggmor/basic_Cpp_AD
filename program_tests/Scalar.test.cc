@@ -8,6 +8,7 @@
 #include <memory>
 #include <cassert>
 #include <vector>
+#include <iostream>
 
 int main()
 {
@@ -30,8 +31,8 @@ int main()
   assert(s_def.getValue() == 2.0);
 
   // Test that the operations are working as they should.
-  Scalar x{ input, 3.0 };
-  Scalar y{ input, 6.0 };
+  Scalar x{ input, 3.0, "x" };
+  Scalar y{ input, 6.0, "y" };
   
   assert( x.add(y) == 9.0 && "Addition not working properly" );
   assert( x.subtract(y) == -3.0 && "Subtraction not working properly");
@@ -57,8 +58,11 @@ int main()
   // Test that the lengths of all these Scalars are all 0.
   assert(x.getLengths().size() == x.getDimension() && y.getLengths().size() == y.getDimension() && "Lengths should be empty since it has dim=0.");
 
+  // Try to print
+  std::cout << "Variables for test printed as:\n" << x << '\n' << y << '\n';
+  
   // Test that std::move will not move a heap allocated Scalar from its initial position.
-  std::unique_ptr<Scalar> z{ std::make_unique<Scalar>(input, 42.0) };
+  std::unique_ptr<Scalar> z{ std::make_unique<Scalar>(input, 42.0, "z") };
   Variable* old_ptr{ z.get() };
 
   std::vector<std::unique_ptr<Variable>> vars{};

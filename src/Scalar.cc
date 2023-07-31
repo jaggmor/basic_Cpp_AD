@@ -1,13 +1,15 @@
 
 #include "Operation.h"
 #include "Scalar.h"
+
 #include <cassert>
 #include <memory>
+#include <string>
 
 constexpr int gscalar_length{ 1 };
 
-Scalar::Scalar(const Operation& operation, double value, bool flag)
-  : Variable{ operation, flag }
+Scalar::Scalar(const Operation& operation, double value, const std::string& name, bool flag)
+  : Variable{ operation, name, flag }
 {
   // Length of a scalar will always be 1
   m_memory = std::make_unique<double>(value);
@@ -39,6 +41,14 @@ double Scalar::divide(const Scalar& denominator) const
 
 std::ostream& Scalar::print(std::ostream& out) const
 {
-  out << "Scalar<" << this->getOperation() << '>' << '=' << *m_memory;
+  auto& name{this->getName()};
+  if (name != "")
+    {
+      out << this->getName() << "=Scalar<" << this->getOperation() << '>' << '=' << *m_memory;
+    }
+  else
+    {
+      out << "Scalar<" << this->getOperation() << '>' << '=' << *m_memory;
+    }
   return out;
 }

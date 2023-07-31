@@ -27,7 +27,16 @@ class Variable;
 using Gradient = std::vector<double>;
 
 class Operation
-{ 
+{
+private:
+  static constexpr std::string_view m_name{"Operation"};
+
+  virtual std::ostream& print(std::ostream& out) const
+  {
+    out << m_name;
+    return out;
+  }
+  
 public:
   virtual ~Operation() = default;
   
@@ -36,12 +45,6 @@ public:
   friend std::ostream& operator<<(std::ostream& out, const Operation& op)
   {
     return op.print(out);
-  }
-
-  virtual std::ostream& print(std::ostream& out) const
-  {
-    out << "Operation";
-    return out;
   }
 
   virtual bool isUnary() const
