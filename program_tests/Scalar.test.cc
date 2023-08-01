@@ -2,7 +2,8 @@
 // Unit test for Scalar.h
 
 #include "Scalar.h"
-#include "operations.h"
+#include "ScalarAdd.h"
+#include "Input.h"
 #include "Variable.h"
 
 #include <memory>
@@ -18,8 +19,6 @@ int main()
   Scalar s_dea{input, 0.0};
   Scalar s_def{input, 1.};
 
-  // Note that the best practice is to use assertions for cases that should
-  // not happen as I have done below
 
   assert(s_dea.getValue() == 0.0 && "Default init was not 0.0");
   assert(s_def.getValue() == 1.0 && "Defined init set to 1.0 was not 1.o as specified");

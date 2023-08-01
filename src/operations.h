@@ -13,7 +13,9 @@
 #include <iostream>
 #include <cassert>
 
+
 using Gradient = std::vector<double>;
+
 
 class ScalarAdd final : public OperationBinary
 {

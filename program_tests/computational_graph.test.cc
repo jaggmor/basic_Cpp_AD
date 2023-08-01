@@ -1,5 +1,7 @@
 
-#include "operations.h"
+#include "ScalarAdd.h"
+#include "ScalarSub.h"
+#include "Input.h"
 #include "DirectedGraph.h"
 #include "Scalar.h"
 #include "OperationUnary.h"
@@ -21,6 +23,7 @@ using map = std::unordered_map<V, K>;
 
 const Input input{};
 const ScalarAdd scalarAdd{};
+const ScalarSub scalarSub{};
 
 
 void buildAddGraph()
@@ -278,7 +281,7 @@ void walk_gradient(Variable& var, DirectedGraph<Variable*>& graph,
  * @param output The scalar output of the computational graph.
  * @return       A map of Variable* -> Gradient. 
  */
-map<Variable*, Gradient> backProp_walk(DirectedGraph<Variable*>& graph, Scalar& output)
+map<Variable*, Gradient> backProp_walk(DirectedGraph<Variable*>& graph, Variable& output)
 {
   // Put the gradient of the output with itself.
   map<Variable*, Gradient> grad_table{};
@@ -338,6 +341,73 @@ void buildAddGraphAndBackPropIt()
 }
 
 
+void buildSubGraphEvaluateAndBackpropIt()
+{
+  // Here I am just messing around a little with the capabilities so far.
+  // Should probably be rewritten into a more proper test.
+  
+  DirectedGraph<Variable*> graph{};
+
+  auto x{ std::make_unique<Scalar>(input, 2.0, "x") };
+  auto a{ std::make_unique<Scalar>(input, 3.0, "a") };
+
+  auto res1{ scalarSub(*x, *a, graph ) };
+  
+  auto b{ std::make_unique<Scalar>(input, 4.0, "b") };
+  auto res2{ scalarSub(*b, *res1, graph) };
+
+  auto res3{ scalarSub(*res2, *x, graph)};
+
+  auto y{ scalarSub(*res3, *x, graph) };
+
+  // The lambda function which really should be made into a normal function.
+  auto customPrint{ [] (Variable* varptr) -> void
+  {
+    std::cout << *varptr;
+  }};
+
+  graph.printGraph(customPrint);
+  
+  a->setValue(1.0);
+  b->setValue(2.0);
+
+  std::vector<v_ptr> params{};  
+  params.push_back(std::move(a));
+  params.push_back(std::move(b));
+
+  std::vector<v_ptr> inter{};
+  inter.push_back(std::move(res1));
+  inter.push_back(std::move(res2));
+  inter.push_back(std::move(res3));
+  inter.push_back(std::move(y));
+
+  // Let's now try to evaluate the new graph.
+
+  x->setTrue();
+  for (auto& param : params)
+    param->setTrue(); // params a,b have been updated.
+
+  for (auto& ivar : inter)
+    ivar->setFalse(); // the res_ should all be false.
+
+  
+  // Loop until all inner vars are updated
+  int number_updated_var{ 0 };
+  int number_vars_to_update{ static_cast<int>(inter.size()) };
+
+  while (number_updated_var < number_vars_to_update)
+    {
+      number_updated_var += update_vars_in_graph(graph, inter);
+    }
+  std::cout << "\nUpdated Graph after a=1.0 and b=2.0. \n";
+  graph.printGraph(customPrint);
+
+  std::cout << "Backpropagation starting: " << std::endl;
+  auto grad_table{ backProp_walk(graph, *inter.at(3)) };
+  printGradTable(grad_table); 
+}
+
+
 int main()
 {
   auto nl{ [] () {std::cout << '\n'; } };
@@ -352,5 +422,8 @@ int main()
   nl();
   buildAddGraphAndBackPropIt();
   nl();
+  buildSubGraphEvaluateAndBackpropIt();
+  nl();
+
   return 0;
 }
