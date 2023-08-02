@@ -14,8 +14,8 @@ std::unique_ptr<Scalar> ScalarAdd::operator()(const Scalar& input1, const Scalar
   return std::make_unique<Scalar>(*this, input1.getValue() + input2.getValue());
 }
 
-std::unique_ptr<Scalar> ScalarAdd::operator()(Scalar& input1, Scalar& input2,
-				   DirectedGraph<Variable*>& graph) const
+std::unique_ptr<Scalar> ScalarAdd::operator()(DirectedGraph<Variable*>& graph,
+					      Scalar& input1, Scalar& input2) const
 {
   // Create the resulting scalar on the heap.
   auto res{ std::make_unique<Scalar>(*this, input1.getValue() + input2.getValue()) };

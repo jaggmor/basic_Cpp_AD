@@ -32,5 +32,8 @@ public:
   std::ostream& print(std::ostream& out) const override;
 };
 
+inline double value(const Variable& var)
+{ return *var.getMemoryPtr(); }
+
 #endif
 

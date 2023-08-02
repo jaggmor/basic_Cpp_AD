@@ -14,8 +14,8 @@ std::unique_ptr<Scalar> ScalarSub::operator()(const Scalar& minuend,
   return std::make_unique<Scalar>(*this, minuend.getValue() - subtrahend.getValue());
 }
 
-std::unique_ptr<Scalar> ScalarSub::operator()(Scalar& minuend, Scalar& subtrahend,
-				   DirectedGraph<Variable*>& graph) const
+std::unique_ptr<Scalar> ScalarSub::operator()(DirectedGraph<Variable*>& graph,
+					      Scalar& minuend, Scalar& subtrahend) const
 {
   // Create the resulting scalar on the heap.
   auto res{ std::make_unique<Scalar>(*this, minuend.getValue() - subtrahend.getValue()) };

@@ -1,6 +1,6 @@
 
-#ifndef SCALAR_ADD_H
-#define SCALAR_ADD_H
+#ifndef SCALAR_DIV_H
+#define SCALAR_DIV_H
 
 #include "OperationBinary.h"
 #include "Scalar.h"
@@ -12,11 +12,10 @@
 
 using Gradient = std::vector<double>;
 
-
-class ScalarAdd final : public OperationBinary
+class ScalarDiv final : public OperationBinary
 {
 private:
-  static constexpr std::string_view m_name{"ScalarAdd"};
+  static constexpr std::string_view m_name{"ScalarDiv"};
   
 public:
   /**
@@ -29,9 +28,9 @@ public:
 
   /**
    * @brief Operator for the functor which takes a graph.
-   * @param graph
    * @param input1
    * @param input2
+   * @param graph
    * @return Unique ptr to resulting scalar.
    * @note A raw ptr is also added to the graph.
    */

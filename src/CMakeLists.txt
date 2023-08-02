@@ -3,7 +3,7 @@
 # We begin with the name of the library and then the source files and headers.
 add_library(lib_Autodiff STATIC
   # We may add more source files to the library here
-  DirectedGraph.h checks.h Variable.h Scalar.h Scalar.cc Operation.h OperationUnary.h OperationBinary.h ScalarAdd.h ScalarAdd.cc ScalarSub.h ScalarSub.cc Input.h Input.cc
+  DirectedGraph.h checks.h Variable.h Scalar.h Scalar.cc Operation.h OperationUnary.h OperationBinary.h ScalarAdd.h ScalarAdd.cc ScalarSub.h ScalarSub.cc ScalarMul.h ScalarMul.cc ScalarDiv.h ScalarDiv.cc Input.h Input.cc
   )
 
 # Below we may add out specific compiler flags for the compilation

@@ -1,4 +1,5 @@
-
+#include "ScalarDiv.h"
+#include "ScalarMul.h"
 #include "ScalarAdd.h"
 #include "ScalarSub.h"
 #include "Input.h"
@@ -24,59 +25,9 @@ using map = std::unordered_map<V, K>;
 const Input input{};
 const ScalarAdd scalarAdd{};
 const ScalarSub scalarSub{};
+const ScalarMul scalarMul{};
+const ScalarDiv scalarDiv{};
 
-
-void buildAddGraph()
-{
-  // This vector is an illustration of a container that could be used to have ownership of all
-  // created variables.
-  std::vector<v_ptr> vars {};
-  
-  DirectedGraph<Variable*> graph{};
-
-  // Simple lambda function that can be used to put away the variables.
-  auto put_away{ [&vars] (auto uptr) { vars.push_back(std::move(uptr)); } };
-  
-  auto x{ std::make_unique<Scalar>(input, 2.0) };
-  auto y{ std::make_unique<Scalar>(input, 3.0) };
-
-  auto a{ scalarAdd(*x, *y, graph ) };
-  put_away(std::move(x)); put_away(std::move(y));
-  
-  auto b{ std::make_unique<Scalar>(input, 4.0) };
-  auto c{ scalarAdd(*a, *b, graph) };
-  put_away(std::move(a)); put_away(std::move(b)); put_away(std::move(c));
- 
-  auto customPrint{ [] (Variable* varptr) -> void
-  {
-    std::cout << *varptr;
-  }};
-  
-  graph.printGraph(customPrint);
-}
-
-
-void buildAddCyclicalGraph()
-{  
-  DirectedGraph<Variable*> graph{};
-  
-  auto x{ std::make_unique<Scalar>(input, 2.0) };
-  auto y{ std::make_unique<Scalar>(input, 3.0) };
-
-  auto a{ scalarAdd(*x, *y, graph ) };
-  
-  auto b{ scalarAdd(*a, *x, graph) };
-  auto c{ scalarAdd(*b, *x, graph) };
-
-  auto customPrint{ [] (Variable* varptr) -> void
-  {
-    std::cout << *varptr;
-  }};
-
-  assert(x->getConsumers(graph).size() == 3 && "X should be parent to three nodes.");
-  
-  graph.printGraph(customPrint);
-}
 
 static void updateVarUnaryOp(const std::vector<Variable*>& inputs, Variable& var)
 {
@@ -139,14 +90,14 @@ void buildAddGraphAndEvaluateIt()
   auto x{ std::make_unique<Scalar>(input, 2.0) };
   auto a{ std::make_unique<Scalar>(input, 3.0) };
 
-  auto res1{ scalarAdd(*x, *a, graph ) };
+  auto res1{ scalarAdd(graph, *x, *a) };
   
   auto b{ std::make_unique<Scalar>(input, 4.0) };
-  auto res2{ scalarAdd(*b, *res1, graph) };
+  auto res2{ scalarAdd(graph, *b, *res1) };
 
-  auto res3{ scalarAdd(*res2, *x, graph)};
+  auto res3{ scalarAdd(graph, *res2, *x)};
 
-  auto y{ scalarAdd(*res3, *x, graph) };
+  auto y{ scalarAdd(graph, *res3, *x) };
 
   // The lambda function which really should be made into a normal function.
   auto customPrint{ [] (Variable* varptr) -> void
@@ -319,14 +270,14 @@ void buildAddGraphAndBackPropIt()
   auto x{ std::make_unique<Scalar>(input, 2.0, "x") };
   auto a{ std::make_unique<Scalar>(input, 3.0, "a") };
 
-  auto res1{ scalarAdd(*x, *a, graph ) };
+  auto res1{ scalarAdd(graph, *x, *a) };
   
   auto b{ std::make_unique<Scalar>(input, 4.0, "b") };
-  auto res2{ scalarAdd(*b, *res1, graph) };
+  auto res2{ scalarAdd(graph, *b, *res1) };
 
-  auto res3{ scalarAdd(*res2, *x, graph)};
+  auto res3{ scalarAdd(graph, *res2, *x)};
 
-  auto y{ scalarAdd(*res3, *x, graph) };
+  auto y{ scalarAdd(graph, *res3, *x) };
 
   // The lambda function which really should be made into a normal function.
   auto customPrint{ [] (Variable* varptr) -> void
@@ -351,14 +302,14 @@ void buildSubGraphEvaluateAndBackpropIt()
   auto x{ std::make_unique<Scalar>(input, 2.0, "x") };
   auto a{ std::make_unique<Scalar>(input, 3.0, "a") };
 
-  auto res1{ scalarSub(*x, *a, graph ) };
+  auto res1{ scalarSub(graph, *x, *a) };
   
   auto b{ std::make_unique<Scalar>(input, 4.0, "b") };
-  auto res2{ scalarSub(*b, *res1, graph) };
+  auto res2{ scalarSub(graph, *b, *res1) };
 
-  auto res3{ scalarSub(*res2, *x, graph)};
+  auto res3{ scalarSub(graph, *res2, *x)};
 
-  auto y{ scalarSub(*res3, *x, graph) };
+  auto y{ scalarSub(graph, *res3, *x) };
 
   // The lambda function which really should be made into a normal function.
   auto customPrint{ [] (Variable* varptr) -> void
@@ -408,14 +359,119 @@ void buildSubGraphEvaluateAndBackpropIt()
 }
 
 
+void buildPolynomialGraph()
+{
+  DirectedGraph<Variable*> graph{};
+
+  auto x{ std::make_unique<Scalar>(input, 2.0, "x") };
+
+  auto res1{ scalarMul(graph, *x, *x) };
+  
+  auto res2{ scalarMul(graph, *x, *res1) };
+
+  auto res3{ scalarMul(graph, *res2, *x)};
+
+  auto y{ scalarMul(graph, *res3, *x) };
+
+  // The lambda function which really should be made into a normal function.
+  auto customPrint{ [] (Variable* varptr) -> void
+  {
+    std::cout << *varptr;
+  }};
+
+  graph.printGraph(customPrint);
+
+  x->setValue(3.0);
+
+  std::vector<v_ptr> inter{};
+  inter.push_back(std::move(res1));
+  inter.push_back(std::move(res2));
+  inter.push_back(std::move(res3));
+  inter.push_back(std::move(y));
+
+  // Let's now try to evaluate the new graph.
+
+  x->setTrue();
+
+  for (auto& ivar : inter)
+    ivar->setFalse(); // the res_ should all be false.
+
+  
+  // Loop until all inner vars are updated
+  int number_updated_var{ 0 };
+  int number_vars_to_update{ static_cast<int>(inter.size()) };
+
+  while (number_updated_var < number_vars_to_update)
+    {
+      number_updated_var += update_vars_in_graph(graph, inter);
+    }
+  std::cout << "\nUpdated Graph after x=3.0. \n";
+  graph.printGraph(customPrint);
+  
+
+  std::cout << "Backpropagation starting: " << std::endl;
+  auto grad_table{ backProp_walk(graph, *inter.at(3)) };
+  printGradTable(grad_table);
+}
+
+
+void testBasicOperations()
+{
+  // Testing the basic operations by creating simple functions.
+  // Function is     (x^3 -  5*x^2 + 10*x - 20)/(x - 5)^2
+  // Derivative is   (-10 + 40*x - 15*x^2 + x^3)/(-5 + x)^3
+  //
+
+  //   (x**3 -  5*x**2 + 10x - 20)/(x - 5)**2
+  // Derivative is  (-10 + 40*x - 15*x**2 + x**3)/(-5 + x)**3
+  
+  DirectedGraph<Variable*> graph{};
+
+  auto x{ std::make_unique<Scalar>(input, 2.0, "x") };
+  auto _x2{ scalarMul(graph, *x, *x) };
+  auto _x3{ scalarMul(graph, *x, *_x2) };
+
+  auto five{ std::make_unique<Scalar>(input, 5.0, "five") };
+  auto _5x2{ scalarMul(graph, *five, *_x2) };
+
+  auto ten{ std::make_unique<Scalar>(input, 10.0, "ten") };
+  auto _10x{ scalarMul(graph, *ten, *x) };
+
+  auto twenty{ std::make_unique<Scalar>(input, 20.0, "twenty") };
+  
+  auto ps1{ scalarSub(graph, *_x3, *_5x2) };
+  auto ps2{ scalarSub(graph, *_10x, *twenty) };
+  auto num{ scalarAdd(graph, *ps1, *ps2) };
+
+  auto mon{ scalarSub(graph, *x, *five) };
+  auto den{ scalarMul(graph, *mon, *mon) };
+
+  auto y{ scalarDiv(graph, *num, *den) };
+
+  auto customPrint{ [] (Variable* varptr) -> void
+  {
+    std::cout << *varptr;
+  }};
+  graph.printGraph(customPrint);
+
+  assert(value(*y) - (-1.33333) < 1e-4
+	       && "The function should evaluate to this value");
+
+  std::cout << "Backpropagation starting: " << std::endl;
+  auto grad_table{ backProp_walk(graph, *y) };
+  printGradTable(grad_table);
+
+  // Note that the Scalar gradient is a vector with only one entry which is the derivative.
+	 assert(grad_table.at(x.get())[0] - (-0.66666) < 1e-4
+		&& "The gradient of the input should be this value");  
+  
+}
+
+
 int main()
 {
   auto nl{ [] () {std::cout << '\n'; } };
 
-  buildAddGraph();
-  nl();
-  buildAddCyclicalGraph();
-  nl();
   buildAddGraphAndEvaluateIt();
   nl();
   buildAddGraphAndBackPropIt();
@@ -424,6 +480,9 @@ int main()
   nl();
   buildSubGraphEvaluateAndBackpropIt();
   nl();
-
+  buildPolynomialGraph();
+  nl();
+  testBasicOperations();
+  nl();
   return 0;
 }
