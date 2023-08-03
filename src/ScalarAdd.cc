@@ -31,8 +31,8 @@ void ScalarAdd::bop(const Variable& input1, const Variable& input2, Variable& va
 {
   assert(isScalar(input1) && isScalar(input2) && isScalar(variable));
   
-  double value1{ *input1.getMemoryPtr() };
-  double value2{ *input2.getMemoryPtr() };
+  double value1{ value(input1) };
+  double value2{ value(input2) };
   *variable.getMemoryPtr() = value1 + value2;
 }
   

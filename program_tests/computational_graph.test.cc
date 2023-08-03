@@ -2,6 +2,10 @@
 #include "ScalarMul.h"
 #include "ScalarAdd.h"
 #include "ScalarSub.h"
+#include "ScalarExp.h"
+#include "ScalarXpn.h"
+#include "ScalarLog.h"
+#include "ScalarAbs.h"
 #include "Input.h"
 #include "DirectedGraph.h"
 #include "Scalar.h"
@@ -27,7 +31,10 @@ const ScalarAdd scalarAdd{};
 const ScalarSub scalarSub{};
 const ScalarMul scalarMul{};
 const ScalarDiv scalarDiv{};
-
+const ScalarExp scalarExp{};
+const ScalarXpn scalarXpn{};
+const ScalarAbs scalarAbs{};
+const ScalarLog scalarLog{};
 
 static void updateVarUnaryOp(const std::vector<Variable*>& inputs, Variable& var)
 {
@@ -468,6 +475,55 @@ void testBasicOperations()
 }
 
 
+void testNotSoBasicOperations()
+{
+  // The function to test is
+  // (exp(2*x) + abs(5*x) - x^(1/2))/(ln(x+1))
+  // This evaluates to 16.4309 at x=1.0
+  // Derivative at 1.0 should evaluate to 15.96
+
+  DirectedGraph<Variable*> graph{};
+
+  auto x{ std::make_unique<Scalar>(input, 1.0, "x") };
+  
+  auto two{ std::make_unique<Scalar>(input, 2.0, "two")};
+  auto _2x{ scalarMul(graph, *two, *x)};
+  auto exp_2x{ scalarExp(graph, *_2x)};
+
+  auto five{ std::make_unique<Scalar>(input, 5.0, "five")};
+  auto _5x{ scalarMul(graph, *five, *x) };
+  auto abs_5x{ scalarAbs(graph, *_5x) };
+
+  auto half{ std::make_unique<Scalar>(input, 0.5, "half")};
+  auto x_1d5{ scalarXpn(graph, *x, *half)};
+  
+  auto one{ std::make_unique<Scalar>(input, 1.0, "one") };
+  auto _xp1{ scalarAdd(graph, *x, *one)};
+  auto log_xp1{ scalarLog(graph, *_xp1)};
+
+  auto ps1{ scalarAdd(graph, *exp_2x, *abs_5x)};
+  auto ps2{ scalarSub(graph, *ps1, *x_1d5)};
+
+  auto y{ scalarDiv(graph, *ps2, *log_xp1)};
+  
+  auto customPrint{ [] (Variable* varptr) -> void
+  {
+    std::cout << *varptr;
+  }};
+  graph.printGraph(customPrint);
+
+  //  assert(value(*y) - (-1.33333) < 1e-4 && "The function should evaluate to this value");
+
+  std::cout << "Backpropagation starting: " << std::endl;
+  auto grad_table{ backProp_walk(graph, *y) };
+  printGradTable(grad_table);
+
+  // Note that the Scalar gradient is a vector with only one entry which is the derivative.
+  //	 assert(grad_table.at(x.get())[0] - (-0.66666) < 1e-4 && "The gradient of the input should be this value");  
+}
+
+
+
 int main()
 {
   auto nl{ [] () {std::cout << '\n'; } };
@@ -484,5 +540,8 @@ int main()
   nl();
   testBasicOperations();
   nl();
+  testNotSoBasicOperations();
+  nl();
+    
   return 0;
 }
