@@ -21,7 +21,7 @@ void ScalarLog::uop(const Variable& input, Variable& variable) const
 {
   assert(isScalar(input) && isScalar(variable));
     
-  *(variable.getMemoryPtr()) = std::log(value(input));
+  *(variable.getMemoryPtr()) = std::log(Scalar::value(input));
 }
 
 Gradient ScalarLog::bprop(const std::vector<Variable*>& inputs, const Variable& diff_var,
@@ -29,7 +29,7 @@ Gradient ScalarLog::bprop(const std::vector<Variable*>& inputs, const Variable& 
 {
   validateScalarUnaryBprop(inputs, diff_var, gradient);
 
-  return Gradient{ 1.0/value(diff_var) * gradient[0] };
+  return Gradient{ 1.0/Scalar::value(diff_var) * gradient[0] };
 }
 
 std::ostream& ScalarLog::print(std::ostream& out) const

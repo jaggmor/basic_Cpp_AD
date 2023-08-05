@@ -25,7 +25,6 @@ using Gradient = std::vector<double>;
 template <typename V, typename K>
 using map = std::unordered_map<V, K>;
 
-
 const Input input{};
 const ScalarAdd scalarAdd{};
 const ScalarSub scalarSub{};
@@ -35,6 +34,35 @@ const ScalarExp scalarExp{};
 const ScalarXpn scalarXpn{};
 const ScalarAbs scalarAbs{};
 const ScalarLog scalarLog{};
+
+/**
+ * @note This method only works for the unit as long as we have ONE output and as long
+ *       as the Directed graph is acyclical, which must be the case in a computational 
+ *       graph since no computation can purely be a function of its own result.
+ */
+static void visit(DirectedGraph<Variable*>& graph, Variable& currentVar) {      
+  if (currentVar.getOperation() == input) return; // Early return at leaf.
+  assert(currentVar.getInputs(graph).size() == 1 || currentVar.getInputs(graph).size() == 2);
+  for (Variable* input : currentVar.getInputs(graph)) {
+    visit(graph, *input);
+  }
+  // When all inputs are visited the current node is updated.
+  // In the future the updating can be made into a recursive function call for multithreading.
+  if (currentVar.getOperation().isUnary()) {
+    const Variable& input{ *currentVar.getInputs(graph).at(0) };
+    currentVar.getOperation().uop(input, currentVar);	
+  } else if (currentVar.getOperation().isBinary()) {
+    const Variable& linput{ *currentVar.getInputs(graph).at(0) };
+    const Variable& rinput{ *currentVar.getInputs(graph).at(1) };
+    currentVar.getOperation().bop(linput, rinput, currentVar);
+  }
+  return;
+}
+
+void forwardProp(DirectedGraph<Variable*>& graph, Variable& output) {
+  assert(output.getConsumers(graph).size() == 0 && "Output for a unit cannot have consumers.");
+  visit(graph, output);
+}
 
 static void updateVarUnaryOp(const std::vector<Variable*>& inputs, Variable& var)
 {
@@ -136,7 +164,6 @@ void buildAddGraphAndEvaluateIt()
   for (auto& ivar : inter)
     ivar->setFalse(); // the res_ should all be false.
 
-  
   // Loop until all inner vars are updated
   int number_updated_var{ 0 };
   int number_vars_to_update{ static_cast<int>(inter.size()) };
@@ -223,8 +250,7 @@ void walk_gradient(Variable& var, DirectedGraph<Variable*>& graph,
       else
 	{
 	  throw BadWalkException("An unexpected condition occurred in the graph");
-	}
-	      
+	}     
     }
   return;
 }
@@ -248,7 +274,7 @@ map<Variable*, Gradient> backProp_walk(DirectedGraph<Variable*>& graph, Variable
   Gradient initial_gradient{1.0};
   grad_table[&output] = initial_gradient;
   
-  map<Variable*, int>      visits{};
+  map<Variable*, int> visits{};
 
   walk_gradient(output, graph, grad_table, visits);
 
@@ -428,9 +454,9 @@ void testBasicOperations()
   // Function is     (x^3 -  5*x^2 + 10*x - 20)/(x - 5)^2
   // Derivative is   (-10 + 40*x - 15*x^2 + x^3)/(-5 + x)^3
   //
-
-  //   (x**3 -  5*x**2 + 10x - 20)/(x - 5)**2
-  // Derivative is  (-10 + 40*x - 15*x**2 + x**3)/(-5 + x)**3
+  // Written pythonically
+  // (x**3 -  5*x**2 + 10*x - 20)/(x - 5)**2
+  // (-10 + 40*x - 15*x**2 + x**3)/(-5 + x)**3
   
   DirectedGraph<Variable*> graph{};
 
@@ -461,7 +487,7 @@ void testBasicOperations()
   }};
   graph.printGraph(customPrint);
 
-  assert(value(*y) - (-1.33333) < 1e-4
+  assert(Scalar::value(*y) - (-1.33333) < 1e-4
 	       && "The function should evaluate to this value");
 
   std::cout << "Backpropagation starting: " << std::endl;
@@ -512,7 +538,7 @@ void testNotSoBasicOperations()
   }};
   graph.printGraph(customPrint);
 
-  //  assert(value(*y) - (-1.33333) < 1e-4 && "The function should evaluate to this value");
+  //  assert(Scalar::value(*y) - (-1.33333) < 1e-4 && "The function should evaluate to this value");
 
   std::cout << "Backpropagation starting: " << std::endl;
   auto grad_table{ backProp_walk(graph, *y) };
@@ -522,6 +548,50 @@ void testNotSoBasicOperations()
   //	 assert(grad_table.at(x.get())[0] - (-0.66666) < 1e-4 && "The gradient of the input should be this value");  
 }
 
+void testForwardProp()
+{
+  auto f{  [] (auto x) { return (x*x*x -  5*x*x + 10*x - 20)/( (x - 5)*(x - 5) );         }};
+  auto f_p{[] (auto x) { return (x*x*x - 15*x*x + 40*x - 10)/( (x - 5)*(x - 5)*(x - 5) ); }};
+  // (x**3 -  5*x**2 + 10*x - 20)/(x - 5)**2
+  // (-10 + 40*x - 15*x**2 + x**3)/(-5 + x)**3
+  
+  DirectedGraph<Variable*> graph{};
+  
+  auto x{ std::make_unique<Scalar>(input, 2.0, "x") };
+  auto _x2{ scalarMul(graph, *x, *x) };
+  auto _x3{ scalarMul(graph, *x, *_x2) };
+
+  auto five{ std::make_unique<Scalar>(input, 5.0, "five") };
+  auto _5x2{ scalarMul(graph, *five, *_x2) };
+
+  auto ten{ std::make_unique<Scalar>(input, 10.0, "ten") };
+  auto _10x{ scalarMul(graph, *ten, *x) };
+
+  auto twenty{ std::make_unique<Scalar>(input, 20.0, "twenty") };
+  
+  auto ps1{ scalarSub(graph, *_x3, *_5x2) };
+  auto ps2{ scalarSub(graph, *_10x, *twenty) };
+  auto num{ scalarAdd(graph, *ps1, *ps2) };
+
+  auto mon{ scalarSub(graph, *x, *five) };
+  auto den{ scalarMul(graph, *mon, *mon) };
+
+  auto y{ scalarDiv(graph, *num, *den) };
+
+  auto customPrint{ [] (Variable* varptr) -> void
+  {
+    std::cout << *varptr;
+  }};
+  graph.printGraph(customPrint);
+
+  assert(y->getValue() - f(x->getValue()) < 1e-4
+	       && "The function should evaluate to this value");
+  x->setValue(1.0);
+  forwardProp(graph, *y);
+  assert(y->getValue() - f(x->getValue()) < 1e-4
+	       && "The function should now evaluate to this value after FP.");
+  std::cout << "New value is: " << y->getValue() << '\n';
+}
 
 
 int main()
@@ -541,6 +611,8 @@ int main()
   testBasicOperations();
   nl();
   testNotSoBasicOperations();
+  nl();
+  testForwardProp();
   nl();
     
   return 0;

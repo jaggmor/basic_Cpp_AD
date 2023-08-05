@@ -31,7 +31,7 @@ void ScalarXpn::bop(const Variable& base, const Variable& exponent, Variable& va
 {
   assert(isScalar(base) && isScalar(exponent) && isScalar(variable));
   
-  *variable.getMemoryPtr() = std::pow(value(base), value(exponent));
+  *variable.getMemoryPtr() = std::pow(Scalar::value(base), Scalar::value(exponent));
 }
   
 Gradient ScalarXpn::bprop(const std::vector<Variable*>& inputs, const Variable& diff_var,
@@ -41,15 +41,15 @@ Gradient ScalarXpn::bprop(const std::vector<Variable*>& inputs, const Variable& 
 
   if (&diff_var == inputs[0])
     {
-      return Gradient{    value(*inputs[1])
-			* std::pow(value(*inputs[0]), value(*inputs[1]) - 1.0)
+      return Gradient{    Scalar::value(*inputs[1])
+			* std::pow(Scalar::value(*inputs[0]), Scalar::value(*inputs[1]) - 1.0)
 			* gradient[0]
 		     };
     }
   else
     {
-      return Gradient{    std::log(value(*inputs[0]))
-			* std::pow(value(*inputs[0]), value(*inputs[1]) )
+      return Gradient{    std::log(Scalar::value(*inputs[0]))
+			* std::pow(Scalar::value(*inputs[0]), Scalar::value(*inputs[1]) )
 			* gradient[0]
 		     };
     }

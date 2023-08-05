@@ -45,8 +45,8 @@ Gradient ScalarDiv::bprop(const std::vector<Variable*>& inputs, const Variable& 
   validateScalarBinaryBprop(inputs, diff_var, gradient);
 
   // x/y
-  double x{ value(*inputs[0]) };
-  double y{ value(*inputs[1]) };
+  double x{ Scalar::value(*inputs[0]) };
+  double y{ Scalar::value(*inputs[1]) };
   
   if (inputs.at(0) == &diff_var)
     return Gradient{ 1.0/y * gradient[0] };

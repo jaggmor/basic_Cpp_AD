@@ -11,26 +11,17 @@
 #include <memory>
 #include <string>
 
-//class Operation;
-
 class Variable
 {
   using vref = Variable*;
-
-private:
-  // Private members are contained within the Variable object These are the creation operation and
-  // the flag of the variable. These will be unmodified in derived objects and thus they are
-  // private.
-  
+private:  
   const Operation& m_operation{};
   const std::string m_name{};
   bool m_flag{};
 
 protected:
-  // Protected members will be modified by derived variables.
   std::unique_ptr<double> m_memory{}; // initialized as nullptr
-  std::vector<int> m_lengths{};
-  
+  std::vector<int> m_lengths{}; 
   /**
    * @param operation The opeation that created the variable.
    * @param flag
@@ -40,7 +31,6 @@ protected:
     , m_name{ name }
     , m_flag{ flag }
   {}
-
   /**
    * @param operation The opeation that created the variable.
    * @param flag
@@ -56,7 +46,6 @@ protected:
 
   */
 public:
-
   /**
    * @brief Redirects the memory pointed to, deleting it in the process, to another memory block.
    * @param 
@@ -66,12 +55,11 @@ public:
     m_memory = std::move(new_memory);
     m_lengths = new_lengths;
   }
-
   /**
    * @param memory Memory that is to be copied to m_memory.
    */
-  //virtual void copyInto(const double* memory) = 0;
-    
+  //virtual void copyInto(const double* memory) = 0;    
+
   /**
    * @return A pointer to the memory the object is holding.
    */

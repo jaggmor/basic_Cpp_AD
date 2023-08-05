@@ -30,8 +30,8 @@ void ScalarMul::bop(const Variable& input1, const Variable& input2, Variable& va
 {
   assert(isScalar(input1) && isScalar(input2) && isScalar(variable));
   
-  double value1{ value(input1) };
-  double value2{ value(input2) };
+  double value1{ Scalar::value(input1) };
+  double value2{ Scalar::value(input2) };
   *variable.getMemoryPtr() = value1 * value2;
 }
   
@@ -42,7 +42,7 @@ Gradient ScalarMul::bprop(const std::vector<Variable*>& inputs, const Variable& 
 
   // a * b -> b if deriving var is a
   return Gradient{ gradient[0] * ( (inputs.at(0) == &diff_var) ?
-				   value(*inputs.at(1)) : value(*inputs.at(0)) ) }; 
+				   Scalar::value(*inputs.at(1)) : Scalar::value(*inputs.at(0)) ) }; 
 }
 
   

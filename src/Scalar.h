@@ -30,10 +30,13 @@ public:
   double divide(const Scalar& denominator) const;
 
   std::ostream& print(std::ostream& out) const override;
-};
 
-inline double value(const Variable& var)
-{ return *var.getMemoryPtr(); }
+  static inline double value(const Variable& var)
+  { return *var.getMemoryPtr(); }
+
+  static inline void setValue(Variable& var, double value)
+  { *var.getMemoryPtr() = value; }
+};
 
 #endif
 

@@ -20,7 +20,7 @@ void ScalarAbs::uop(const Variable& input, Variable& variable) const
 {
   assert(isScalar(input) && isScalar(variable));
     
-  *(variable.getMemoryPtr()) = std::abs(value(input));
+  *(variable.getMemoryPtr()) = std::abs(Scalar::value(input));
 }
 
 Gradient ScalarAbs::bprop(const std::vector<Variable*>& inputs, const Variable& diff_var,
@@ -28,7 +28,7 @@ Gradient ScalarAbs::bprop(const std::vector<Variable*>& inputs, const Variable& 
 {
   validateScalarUnaryBprop(inputs, diff_var, gradient);
 
-  return Gradient{ ( (value(diff_var) >= 0.0) ? 1. : -1. ) * gradient[0] };
+  return Gradient{ ( (Scalar::value(diff_var) >= 0.0) ? 1. : -1. ) * gradient[0] };
 }
 
 std::ostream& ScalarAbs::print(std::ostream& out) const 
