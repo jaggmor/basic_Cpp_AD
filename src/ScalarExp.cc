@@ -6,10 +6,10 @@
 
 using Gradient = std::vector<double>;
 
-std::unique_ptr<Scalar> ScalarExp::operator()(const Scalar& input) const
+std::unique_ptr<Variable> ScalarExp::operator()(const Variable& input) const
 { return std::make_unique<Scalar>(*this, std::exp( input.getValue() ) ); }
 
-std::unique_ptr<Scalar> ScalarExp::operator()(DirectedGraph<Variable*>& graph, Scalar& input) const
+std::unique_ptr<Variable> ScalarExp::operator()(DirectedGraph<Variable*>& graph, Variable& input) const
 {
   auto res{ ScalarExp::operator()(input) };
   graph.addConnection(&input, res.get());

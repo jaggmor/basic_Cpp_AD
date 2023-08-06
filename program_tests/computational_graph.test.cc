@@ -1,17 +1,9 @@
-#include "ScalarDiv.h"
-#include "ScalarMul.h"
-#include "ScalarAdd.h"
-#include "ScalarSub.h"
-#include "ScalarExp.h"
-#include "ScalarXpn.h"
-#include "ScalarLog.h"
-#include "ScalarAbs.h"
-#include "Input.h"
 #include "DirectedGraph.h"
 #include "Scalar.h"
 #include "OperationUnary.h"
 #include "OperationBinary.h"
 #include "Operation.h"
+#include "operation_constants.h"
 
 #include <iostream>
 #include <vector>
@@ -24,16 +16,6 @@ using Gradient = std::vector<double>;
 
 template <typename V, typename K>
 using map = std::unordered_map<V, K>;
-
-const Input input{};
-const ScalarAdd scalarAdd{};
-const ScalarSub scalarSub{};
-const ScalarMul scalarMul{};
-const ScalarDiv scalarDiv{};
-const ScalarExp scalarExp{};
-const ScalarXpn scalarXpn{};
-const ScalarAbs scalarAbs{};
-const ScalarLog scalarLog{};
 
 /**
  * @note This method only works for the unit as long as we have ONE output and as long

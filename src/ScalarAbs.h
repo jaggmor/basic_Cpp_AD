@@ -19,9 +19,9 @@ private:
   static constexpr std::string_view m_name{"ScalarAbs"};
    
 public:
-  std::unique_ptr<Scalar> operator()(const Scalar& input) const;
+  std::unique_ptr<Variable> operator()(const Variable& input) const;
 
-  std::unique_ptr<Scalar> operator()(DirectedGraph<Variable*>& graph, Scalar& input) const;
+  std::unique_ptr<Variable> operator()(DirectedGraph<Variable*>& graph, Variable& input) const;
   void uop(const Variable& input, Variable& variable) const override;
 
   Gradient bprop(const std::vector<Variable*>& inputs, const Variable& diff_var,

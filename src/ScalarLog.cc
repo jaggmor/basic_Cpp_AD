@@ -6,11 +6,11 @@
 
 using Gradient = std::vector<double>;
 
-std::unique_ptr<Scalar> ScalarLog::operator()(const Scalar& input) const
+std::unique_ptr<Variable> ScalarLog::operator()(const Variable& input) const
 { return std::make_unique<Scalar>(*this, std::log( input.getValue() ) ); }
 
-std::unique_ptr<Scalar> ScalarLog::operator()(DirectedGraph<Variable*>& graph,
-					      Scalar& input) const
+std::unique_ptr<Variable> ScalarLog::operator()(DirectedGraph<Variable*>& graph,
+					      Variable& input) const
 {
   auto res{ ScalarLog::operator()(input) };
   graph.addConnection(&input, res.get());

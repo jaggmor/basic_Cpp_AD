@@ -9,13 +9,13 @@
 using Gradient = std::vector<double>;
 
 
-std::unique_ptr<Scalar> ScalarXpn::operator()(const Scalar& base, const Scalar& exponent) const
+std::unique_ptr<Variable> ScalarXpn::operator()(const Variable& base, const Variable& exponent) const
 {
   return std::make_unique<Scalar>(*this, std::pow(base.getValue(), exponent.getValue()) );
 }
 
-std::unique_ptr<Scalar> ScalarXpn::operator()(DirectedGraph<Variable*>& graph,
-					      Scalar& base, Scalar& exponent) const
+std::unique_ptr<Variable> ScalarXpn::operator()(DirectedGraph<Variable*>& graph,
+					      Variable& base, Variable& exponent) const
 {
   // Create the resulting scalar on the heap.
   auto res{ ScalarXpn::operator()(base, exponent) };

@@ -19,10 +19,10 @@ private:
   static constexpr std::string_view m_name{"ScalarXpn"};
   
 public:
-  std::unique_ptr<Scalar> operator()(const Scalar& base, const Scalar& exponent) const;
+  std::unique_ptr<Variable> operator()(const Variable& base, const Variable& exponent) const;
 
-  std::unique_ptr<Scalar> operator()(DirectedGraph<Variable*>& graph,
-				     Scalar& base, Scalar& exponent) const;
+  std::unique_ptr<Variable> operator()(DirectedGraph<Variable*>& graph,
+				     Variable& base, Variable& exponent) const;
   
   void bop(const Variable& base, const Variable& exponent, Variable& variable) const override;
 

@@ -41,6 +41,18 @@ public:
   {}
 };
 
+class IncorrectValueException : public std::runtime_error
+{
+public:
+  /**
+   * @brief Exception to be called when some value is not as was expected.
+   * @param error String with a relevant error message.  
+   */
+  IncorrectValueException(const std::string& error)
+    : std::runtime_error{ error.c_str() }
+  {}
+};
+
 
 
 #endif

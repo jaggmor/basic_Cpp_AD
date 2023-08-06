@@ -19,8 +19,8 @@ public:
   Scalar(const Operation& operation, double value=0.0,
 	 const std::string& name="", bool flag=false);
   
-  void setValue(double value) { *m_memory = value; };
-  double getValue() const { return *m_memory; };
+  void setValue(double value) override { *m_memory = value; };
+  double getValue() const override { return *m_memory; };
   
   constexpr int getDimension() const { return m_dimension; };
   

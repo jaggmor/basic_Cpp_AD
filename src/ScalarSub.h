@@ -24,7 +24,7 @@ public:
    * @param input2
    * @return Unique ptr to resulting scalar.
    */
-  std::unique_ptr<Scalar> operator()(const Scalar& input1, const Scalar& input2) const;
+  std::unique_ptr<Variable> operator()(const Variable& input1, const Variable& input2) const;
 
   /**
    * @brief Operator for the functor which takes a graph.
@@ -34,8 +34,8 @@ public:
    * @return Unique ptr to resulting scalar.
    * @note A raw ptr is also added to the graph.
    */
-  std::unique_ptr<Scalar> operator()(DirectedGraph<Variable*>& graph,
-				     Scalar& input1, Scalar& input2) const;
+  std::unique_ptr<Variable> operator()(DirectedGraph<Variable*>& graph,
+				     Variable& input1, Variable& input2) const;
   
   void bop(const Variable& input1, const Variable& input2, Variable& variable) const override;
 

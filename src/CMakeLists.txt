@@ -4,6 +4,7 @@
 add_library(lib_Autodiff STATIC
   # We may add more source files to the library here
   DirectedGraph.h checks.h Variable.h Scalar.h Scalar.cc Operation.h OperationUnary.h OperationBinary.h ScalarAdd.h ScalarAdd.cc ScalarSub.h ScalarSub.cc ScalarMul.h ScalarMul.cc ScalarDiv.h ScalarDiv.cc Input.h Input.cc ScalarLog.h ScalarLog.cc ScalarExp.h ScalarExp.cc ScalarXpn.h ScalarXpn.cc ScalarAbs.h ScalarAbs.cc
+  operation_constants.h Unit.h
   )
 
 # Below we may add out specific compiler flags for the compilation

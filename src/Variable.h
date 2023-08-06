@@ -15,7 +15,7 @@ class Variable
 {
   using vref = Variable*;
 private:  
-  const Operation& m_operation{};
+  const Operation& m_operation;
   const std::string m_name{};
   bool m_flag{};
 
@@ -46,6 +46,8 @@ protected:
 
   */
 public:
+  virtual void setValue(double value) = 0;
+  virtual double getValue() const = 0;      
   /**
    * @brief Redirects the memory pointed to, deleting it in the process, to another memory block.
    * @param 

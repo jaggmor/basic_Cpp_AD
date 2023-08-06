@@ -24,7 +24,7 @@ public:
    * @param input
    * @return Unique ptr to resulting scalar.
    */
-  std::unique_ptr<Scalar> operator()(const Scalar& input) const;
+  std::unique_ptr<Variable> operator()(const Variable& input) const;
 
   /**
    * @brief Operator for the functor which takes a graph.
@@ -33,7 +33,7 @@ public:
    * @return Unique ptr to resulting scalar.
    * @note A raw ptr is also added to the graph.
    */
-  std::unique_ptr<Scalar> operator()(DirectedGraph<Variable*>& graph, Scalar& input) const;
+  std::unique_ptr<Variable> operator()(DirectedGraph<Variable*>& graph, Variable& input) const;
   void uop(const Variable& input, Variable& variable) const override;
 
   Gradient bprop(const std::vector<Variable*>& inputs, const Variable& diff_var,

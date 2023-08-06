@@ -16,3 +16,9 @@ add_executable(test_cgraph computational_graph.test.cc)
 target_link_libraries(test_cgraph lib_Autodiff)
 add_test(NAME Test_Computational_Graph COMMAND test_cgraph)
 
+# Add Unit class test
+add_executable(test_unitcl unit_class.test.cc)
+target_link_libraries(test_unitcl lib_Autodiff)
+add_test(NAME Test_Unit_Class COMMAND test_unitcl)
+
+

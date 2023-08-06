@@ -8,13 +8,13 @@
 
 using Gradient = std::vector<double>;
 
-std::unique_ptr<Scalar> ScalarDiv::operator()(const Scalar& dividend,
-					      const Scalar& divisor) const
+std::unique_ptr<Variable> ScalarDiv::operator()(const Variable& dividend,
+					      const Variable& divisor) const
 {
   return std::make_unique<Scalar>(*this, dividend.getValue() / divisor.getValue());
 }
 
-std::unique_ptr<Scalar> ScalarDiv::operator()(DirectedGraph<Variable*>& graph, Scalar& dividend, Scalar& divisor) const
+std::unique_ptr<Variable> ScalarDiv::operator()(DirectedGraph<Variable*>& graph, Variable& dividend, Variable& divisor) const
 {
   // Create the resulting scalar on the heap.
   auto res{ std::make_unique<Scalar>(*this, dividend.getValue() / divisor.getValue()) };
