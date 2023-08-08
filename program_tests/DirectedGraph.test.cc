@@ -4,6 +4,7 @@
 #include <cassert>
 #include <vector>
 #include <iostream>
+#include <utility>
 
 
 int constexpr someNodes[]{2, 4, 6, 8, 10, 100, -10, 42};
@@ -132,6 +133,96 @@ void testGetConsumersInputs()
   assert(graph.getNodeConsumers(1)[1] == 3);
 }
 
+void testAbsorbingGraphs()
+{
+  std::cout << "Testing with normal graph\n";
+  {
+    DirectedGraph<int> graph1{};
+    graph1.addConnection(1, 3);
+    graph1.addConnection(2, 3);
+    graph1.addConnection(3, 10);
+    graph1.addConnection(10, 11);
+  
+    DirectedGraph<int> graph2{};
+    graph2.addConnection(3, 5);
+    graph2.addConnection(3, 6);
+    graph2.addConnection(5, 7);
+    graph2.addConnection(6, 7);
+    graph1.absorb(graph2);
+    std::cout << "Graph 1\n-----------\n";
+    graph1.printGraph();
+    std::cout << "Graph 2\n-----------\n";
+    graph2.printGraph();
+  }
+
+  std::cout << "Now testing with a linked graph\n";
+  {
+    DirectedGraph<int> graph1{};
+    graph1.addConnection(1, 2);
+    graph1.addConnection(2, 3);
+    graph1.addConnection(3, 4);
+  
+    DirectedGraph<int> graph2{};
+    graph2.addConnection(4, 5);
+    graph2.addConnection(5, 6);
+    graph2.addConnection(6, 7);
+    graph2.addConnection(7, 1);
+    graph1.absorb(graph2);
+    std::cout << "Graph 1\n-----------\n";
+    graph1.printGraph();
+    std::cout << "Graph 2\n-----------\n";
+    graph2.printGraph();
+  }
+}
+
+void testAssociationAbsorb()
+{
+  std::cout << "Testing association absorb with normal graph\n";
+  {
+    DirectedGraph<int> graph1{};
+    graph1.addConnection(1, 3);
+    graph1.addConnection(2, 3);
+    graph1.addConnection(3, 10);
+    graph1.addConnection(10, 11);
+  
+    DirectedGraph<int> graph2{};
+    graph2.addConnection(4, 5);
+    graph2.addConnection(4, 6);
+    graph2.addConnection(5, 7);
+    graph2.addConnection(6, 7);
+
+    // We make the association 3 <=> 4
+    std::vector<std::pair<int, int>> av{ std::make_pair(3, 4) };
+    
+    graph1.absorbDisjoint(graph2, av);
+    std::cout << "Graph 1\n-----------\n";
+    graph1.printGraph();
+    std::cout << "Graph 2\n-----------\n";
+    graph2.printGraph();
+  }
+
+  std::cout << "Now testing with a linked graph and association \n";
+  {
+    DirectedGraph<int> graph1{};
+    graph1.addConnection(0, 1);
+    graph1.addConnection(1, 2);
+    graph1.addConnection(2, 3);
+  
+    DirectedGraph<int> graph2{};
+    graph2.addConnection(4, 5);
+    graph2.addConnection(5, 6);
+    graph2.addConnection(6, 7);
+    graph2.addConnection(7, 8);
+
+    std::vector<std::pair<int, int>> av{ std::make_pair(0, 8), std::make_pair(3, 4) };
+    
+    graph1.absorbDisjoint(graph2, av);
+    std::cout << "Graph 1\n-----------\n";
+    graph1.printGraph();
+    std::cout << "Graph 2\n-----------\n";
+    graph2.printGraph();
+  }
+}
 
 int main()
 {
@@ -143,7 +234,8 @@ int main()
   testPruning();
   testAddEdges();
   testGetConsumersInputs();
-  
+  testAbsorbingGraphs();
+  testAssociationAbsorb();
   return 0;
 }
 

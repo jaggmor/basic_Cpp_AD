@@ -1,15 +1,13 @@
 #ifndef DIRECTED_GRAPH_H
 #define DIRECTED_GRAPH_H
 
-
 #include <iostream>
 #include <vector>
 #include <map>
 #include <cassert>
 #include <functional>
 #include <algorithm>
-#include <iterator>
-
+#include <utility>
 
 /**
  * A directed edge struct used to connect a tail ---> head in a graph.
@@ -24,8 +22,6 @@ struct Edge
   T tail{};
   T head{};
 };
-
-
 /**
  * @brief A directed graph consisting of nodes and directed edges.
  * @note The graph is essentially a wrapper for a map where some key is mapped to two lists containing 
@@ -34,9 +30,7 @@ struct Edge
 template <typename T>
 class DirectedGraph
 {
-
 private:
-
   /**
    * @brief Node struct in the graph.
    * @param inputs std::vector of all inputs/direct predecessor of the node. 
@@ -48,51 +42,46 @@ private:
     std::vector<T> inputs{};   
     std::vector<T> consumers{};
   };
-
   std::map<T, Node> m_graphMap{};
-
-  
+  /** @brief prints all underlying key-value pairs. */
+  void debug_printHashMap(const std::map<T, Node> map)
+  {
+    std::cout << "Printing map\n";
+    for (const auto& [key, value] : map)
+      {
+	std::cout << key << " - " << "inputs=" << value.inputs.size()
+		  << "consumers=" << value.consumers.size() << '\n';
+      }
+  }
   /**
    * @brief Removes element for node's inputs.
    * @param removeElement Element to be removed
    * @param nodeElement Element key for the node whose inputs removeElement is to be removed from.
    */
   void removeFromInputs(const T& removeElement, const T& nodeElement);
-
-  
   /**
    * @brief Removes element for node's consumers.
    * @param removeElement Element to be removed
    * @param nodeElement Element key for the node whose consumers removeElement is to be removed from.
    */
   void removeFromConsumers(const T& removeElement, const T& nodeElement);
-
-  
   void removeFromVector(const T& element, std::vector<T>& v);
-
-  
 public:
-
   /**
    * @brief Default constructor.
    */
   DirectedGraph<T>() = default;
-
   /**
    * @brief Add a new node to the graph.
    * @param element The element representing the node.
    * @return true if the element already exists, else false.
    */
   bool addNode(const T& element);
-
-  
   /**
    * @brief Adds new nodes to the graph.
    * @param elements The elements representing the nodes to be added.
    */
   void addNodes(const std::vector<T>& elements);
-
-  
   /**
    * @brief Gets the consumers.
    * @param element Element representing node whose conumers we want.
@@ -100,8 +89,6 @@ public:
    */
   const std::vector<T>& getNodeConsumers(const T& element) const
   { return m_graphMap.at(element).consumers; }
-
-  
   /**
    * @brief Gets the consumers.
    * @param element Element representing node whose conumers we want.
@@ -109,72 +96,71 @@ public:
    */
   const std::vector<T>& getNodeInputs(const T& element) const
   { return m_graphMap.at(element).inputs; }
-
-  
   /**
    * @brief Adds an edge to the graph.
    * @param edge Edge struct.
    */
   void addEdge(const Edge<T>& edge);
-
-  
   /**
    * @brief Adds edges to the graph.
    * @param edges std::vector of Edge objects to be added.
    */
   void addEdges(const std::vector<Edge<T>>& edges);
-
-  
   /**
    * @brief Adds an edge to the graph.
    * @param tail The tail of the edge.
    * @param source The source of the edge.
    */
   void addEdgeElements(const T& tail, const T& head);
-
   /**
    * @brief Adds two nodes and an edge between them.
    * @param from element representing the tail.
    * @param to   element representing the head.
    */
   void addConnection(const T& from, const T& to);
-  
   /**
    * Prints the element in each node as well as each node's inputs and consumers.
    * @brief Prints the graph.
    */
   void printGraph() const;
-
   /**
    * Prints the element in each node as well as each node's inputs and consumers.
    * @brief Prints the graph according to some element rule.
    */
   void printGraph(const std::function<void(T)> customPrintFcn) const;
-  
   /**
    * Removes a node and all connecting edges from the graph.
    * @brief Removes node.
    * @param element Element representing the node to be removed.
    */
   void prune(const T& element);
-
-  
   /**
    * Removes multiple nodes from the graph along with all connecting edges.
    * @brief Remove multiple nodes.
    * @param removedElements std::vector of the elements representing the nodes to be removed.
    */
   void pruneMultiple(const std::vector<T>& removedElements);
-
-  
   /**
    * Clears the graph of all nodes and edges. Is essentially like making a new graph object.
    * @brief Flushes the object.
    */
   DirectedGraph<T>& flush() {m_graphMap.clear(); return *this;}
-
+  /**
+   * @brief Merges the nodes corresponding to the two elements keeping the first element and
+   *        rerouting the connections from the second element to the first element.
+   * @param Kept element.
+   * @param Merged element.
+   */
+  void mergeElements(const T& keptElement, const T& mergedElement);
+  /**
+   * @brief Merges two graphs with some common nodes specified as pairs.
+   * @param o_graph Other graph.
+   * @param pairs Vector of pairs with associated nodes.
+   */
+  void absorbDisjoint(DirectedGraph<T>& o_graph, const std::vector<std::pair<T, T>>& associations);
+  void absorb(DirectedGraph<T>& o_graph);
+  bool isEmpty() { return (m_graphMap.size() == 0); }
 };
-
 
 template <typename T>
 void DirectedGraph<T>::removeFromInputs(const T& removeElement, const T& nodeElement)
@@ -189,7 +175,6 @@ void DirectedGraph<T>::removeFromInputs(const T& removeElement, const T& nodeEle
     }
 }
 
-
 template <typename T>
 void DirectedGraph<T>::removeFromConsumers(const T& removeElement, const T& nodeElement)
 {
@@ -203,7 +188,6 @@ void DirectedGraph<T>::removeFromConsumers(const T& removeElement, const T& node
     }
 }
 
-
 template <typename T>
 void DirectedGraph<T>::removeFromVector(const T& element, std::vector<T>& v)
 {
@@ -211,7 +195,6 @@ void DirectedGraph<T>::removeFromVector(const T& element, std::vector<T>& v)
   if ( it != v.end() )
     v.erase( it );
 }
-
 
 template <typename T>
 void DirectedGraph<T>::printGraph() const
@@ -231,7 +214,6 @@ void DirectedGraph<T>::printGraph() const
       std::cout << '\n';
     }
 }
-
 
 template <typename T>
 void DirectedGraph<T>::printGraph(const std::function<void(T)> customPrintFcn) const
@@ -256,7 +238,6 @@ void DirectedGraph<T>::printGraph(const std::function<void(T)> customPrintFcn) c
     }
 }
 
-
 template <typename T>
 bool DirectedGraph<T>::addNode(const T& element)
 {
@@ -265,7 +246,6 @@ bool DirectedGraph<T>::addNode(const T& element)
   m_graphMap[element] = Node{};
   return false;
 }
-
 
 template <typename T>
 void DirectedGraph<T>::addNodes(const std::vector<T>& elements)
@@ -276,20 +256,17 @@ void DirectedGraph<T>::addNodes(const std::vector<T>& elements)
     }  
 }
 
-
 template <typename T>
 void DirectedGraph<T>::addEdge(const Edge<T>& edge)
 {
   assert(m_graphMap.count(edge.tail) == 1
 	 && m_graphMap.count(edge.head) == 1
 	 && "Tried to add an edge with non-existant nodes");
-
   // Add the head as a consumer of the tail...
   m_graphMap[edge.tail].consumers.push_back(edge.head);
   // and add the tail as an input of the head.
   m_graphMap[edge.head].inputs.push_back(edge.tail);
 }
-
 
 template <typename T>
 void DirectedGraph<T>::addEdges(const std::vector<Edge<T>>& edges)
@@ -300,13 +277,11 @@ void DirectedGraph<T>::addEdges(const std::vector<Edge<T>>& edges)
     }
 }
 
-
 template <typename T>
 void DirectedGraph<T>::addEdgeElements(const T& tail, const T& head)
 {
   addEdge( Edge<T>{tail, head} );
 }
-
 
 template <typename T>
 void DirectedGraph<T>::addConnection(const T& from, const T& to)
@@ -316,7 +291,6 @@ void DirectedGraph<T>::addConnection(const T& from, const T& to)
   addEdgeElements(from, to);
 }
 
-
 template <typename T>
 void DirectedGraph<T>::prune(const T& element)
 {
@@ -324,7 +298,6 @@ void DirectedGraph<T>::prune(const T& element)
   // range is pointing at we will still access the removed element in the loop.
   // Segfault :(
   m_graphMap.erase(element);
-
   for (const auto& pair : m_graphMap)
     {
       if (pair.first == element)
@@ -336,7 +309,6 @@ void DirectedGraph<T>::prune(const T& element)
     }
 }
 
-
 template <typename T>
 void DirectedGraph<T>::pruneMultiple(const std::vector<T>& removedElements)
 {
@@ -344,5 +316,61 @@ void DirectedGraph<T>::pruneMultiple(const std::vector<T>& removedElements)
     prune(element);
 }
 
+template <typename T>
+void DirectedGraph<T>::mergeElements(const T& keptElement, const T& mergedElement)
+{
+  // removeFromInputs(const T& removeElement, const T& nodeElement);
+  // Edge<T>{tail, head}
+  // Iterate over the inputs and consumers of the merged element
+  for (const T& inputOfMerge : m_graphMap.at(mergedElement).inputs)
+    {
+      addEdgeElements(inputOfMerge, keptElement);
+      removeFromConsumers(mergedElement, inputOfMerge);
+    }
+  for (const T& consumerOfMerge : m_graphMap.at(mergedElement).consumers)
+    {
+      addEdgeElements(keptElement, consumerOfMerge);
+      removeFromInputs(mergedElement, consumerOfMerge);
+    }
+  // Remove from the graph at the end
+  m_graphMap.erase(mergedElement);
+}
+
+template <typename T>
+void DirectedGraph<T>::absorbDisjoint(DirectedGraph<T>& o_graph,
+			      const std::vector<std::pair<T, T>>& associations)
+{
+  m_graphMap.merge(o_graph.m_graphMap);
+  assert(o_graph.m_graphMap.size() == 0 &&
+	 "Do not support merging of graphs with equal elements using associations.");
+  for (const auto& [firstElement, secondElement] : associations)
+    {
+      mergeElements(firstElement, secondElement);
+    }
+}
+
+template <typename T>
+void DirectedGraph<T>::absorb(DirectedGraph<T>& o_graph)
+{
+  // A normal merge implies that some elements are equal in the graphs. Thus the connections
+  // for the added node should be correct, but not necessarily
+  m_graphMap.merge(o_graph.m_graphMap);
+  debug_printHashMap(m_graphMap);
+  debug_printHashMap(o_graph.m_graphMap);
+  assert(o_graph.m_graphMap.size() > 0 && "Merging two disjoint graphs.");
+  for (const auto& [copyKey, node] : o_graph.m_graphMap)
+    {
+      for (const T& copyInput : node.inputs)
+	{
+	  m_graphMap.at(copyKey).inputs.push_back(copyInput);
+	}
+      for (const T& copyConsumer : node.consumers)
+	{
+	  m_graphMap.at(copyKey).consumers.push_back(copyConsumer);
+	}
+      o_graph.m_graphMap.erase(copyKey);
+    }
+  assert(o_graph.isEmpty());
+}
 
 #endif

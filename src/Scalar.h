@@ -6,6 +6,7 @@
 
 #include "Operation.h"
 #include "Variable.h"
+#include "input_constant.h"
 
 #include <memory>
 #include <string>
@@ -16,14 +17,16 @@ private:
   static constexpr int m_dimension{ 0 };
   
 public:
-  Scalar(const Operation& operation, double value=0.0,
-	 const std::string& name="", bool flag=false);
+  Scalar(const std::string& name, const Operation& operation=input, // Specific name => Input
+	 double value=0.0, bool flag=false);
+  Scalar(const Operation& operation, double value=0.0, bool flag=false);
   
   void setValue(double value) override { *m_memory = value; };
   double getValue() const override { return *m_memory; };
   
   constexpr int getDimension() const { return m_dimension; };
-  
+
+  // Kind of depreciated...
   double add(const Scalar& rscalar) const;
   double subtract(const Scalar& subtrahend) const;
   double multiply(const Scalar& factor) const;

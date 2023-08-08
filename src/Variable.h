@@ -11,40 +11,34 @@
 #include <memory>
 #include <string>
 
+
 class Variable
 {
   using vref = Variable*;
-private:  
+private:
+  const std::string m_name{""};
   const Operation& m_operation;
-  const std::string m_name{};
   bool m_flag{};
 
 protected:
   std::unique_ptr<double> m_memory{}; // initialized as nullptr
   std::vector<int> m_lengths{}; 
   /**
+   * @param name Named variables are usually inputs.
    * @param operation The opeation that created the variable.
    * @param flag
    */
-  Variable(const Operation& operation, const std::string& name="", bool flag=false)
+  Variable(const std::string& name, const Operation& operation, bool flag=false)
+    : m_name{ name }
+    , m_operation{ operation }
+    , m_flag{ flag }
+  {}
+  Variable(const Operation& operation, bool flag=false)
     : m_operation{ operation }
-    , m_name{ name }
     , m_flag{ flag }
   {}
-  /**
-   * @param operation The opeation that created the variable.
-   * @param flag
-   
-     @question Do we really need to be able to create a Scalar/variable etc using a unique_ptr...
-               Probably not!
-
-  Variable(const Operation& operation, bool flag=false, std::unique_ptr<double> memory=nullptr)
-    : m_operation{ operation }   
-    , m_flag{ flag }
-    , m_memory{ std::move(memory }
-  {}
-
-  */
+  
+  
 public:
   virtual void setValue(double value) = 0;
   virtual double getValue() const = 0;      

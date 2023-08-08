@@ -282,12 +282,12 @@ void buildAddGraphAndBackPropIt()
   
   DirectedGraph<Variable*> graph{};
 
-  auto x{ std::make_unique<Scalar>(input, 2.0, "x") };
-  auto a{ std::make_unique<Scalar>(input, 3.0, "a") };
+  auto x{ std::make_unique<Scalar>("x", input, 2.0) };
+  auto a{ std::make_unique<Scalar>("a", input, 3.0) };
 
   auto res1{ scalarAdd(graph, *x, *a) };
   
-  auto b{ std::make_unique<Scalar>(input, 4.0, "b") };
+  auto b{ std::make_unique<Scalar>("b", input, 4.0) };
   auto res2{ scalarAdd(graph, *b, *res1) };
 
   auto res3{ scalarAdd(graph, *res2, *x)};
@@ -314,12 +314,12 @@ void buildSubGraphEvaluateAndBackpropIt()
   
   DirectedGraph<Variable*> graph{};
 
-  auto x{ std::make_unique<Scalar>(input, 2.0, "x") };
-  auto a{ std::make_unique<Scalar>(input, 3.0, "a") };
+  auto x{ std::make_unique<Scalar>("x", input, 2.0) };
+  auto a{ std::make_unique<Scalar>("a", input, 3.0) };
 
   auto res1{ scalarSub(graph, *x, *a) };
   
-  auto b{ std::make_unique<Scalar>(input, 4.0, "b") };
+  auto b{ std::make_unique<Scalar>("b", input, 4.0) };
   auto res2{ scalarSub(graph, *b, *res1) };
 
   auto res3{ scalarSub(graph, *res2, *x)};
@@ -378,7 +378,7 @@ void buildPolynomialGraph()
 {
   DirectedGraph<Variable*> graph{};
 
-  auto x{ std::make_unique<Scalar>(input, 2.0, "x") };
+  auto x{ std::make_unique<Scalar>("x", input, 2.0) };
 
   auto res1{ scalarMul(graph, *x, *x) };
   
@@ -442,17 +442,17 @@ void testBasicOperations()
   
   DirectedGraph<Variable*> graph{};
 
-  auto x{ std::make_unique<Scalar>(input, 2.0, "x") };
+  auto x{ std::make_unique<Scalar>("x", input, 2.0) };
   auto _x2{ scalarMul(graph, *x, *x) };
   auto _x3{ scalarMul(graph, *x, *_x2) };
 
-  auto five{ std::make_unique<Scalar>(input, 5.0, "five") };
+  auto five{ std::make_unique<Scalar>("five", input, 5.0) };
   auto _5x2{ scalarMul(graph, *five, *_x2) };
 
-  auto ten{ std::make_unique<Scalar>(input, 10.0, "ten") };
+  auto ten{ std::make_unique<Scalar>("ten", input, 10.0) };
   auto _10x{ scalarMul(graph, *ten, *x) };
 
-  auto twenty{ std::make_unique<Scalar>(input, 20.0, "twenty") };
+  auto twenty{ std::make_unique<Scalar>("twenty", input, 20.0) };
   
   auto ps1{ scalarSub(graph, *_x3, *_5x2) };
   auto ps2{ scalarSub(graph, *_10x, *twenty) };
@@ -492,20 +492,20 @@ void testNotSoBasicOperations()
 
   DirectedGraph<Variable*> graph{};
 
-  auto x{ std::make_unique<Scalar>(input, 1.0, "x") };
+  auto x{ std::make_unique<Scalar>("x", input, 1.0) };
   
-  auto two{ std::make_unique<Scalar>(input, 2.0, "two")};
+  auto two{ std::make_unique<Scalar>("two", input, 2.0)};
   auto _2x{ scalarMul(graph, *two, *x)};
   auto exp_2x{ scalarExp(graph, *_2x)};
 
-  auto five{ std::make_unique<Scalar>(input, 5.0, "five")};
+  auto five{ std::make_unique<Scalar>("five", input, 5.0)};
   auto _5x{ scalarMul(graph, *five, *x) };
   auto abs_5x{ scalarAbs(graph, *_5x) };
 
-  auto half{ std::make_unique<Scalar>(input, 0.5, "half")};
+  auto half{ std::make_unique<Scalar>("half", input, 0.5)};
   auto x_1d5{ scalarXpn(graph, *x, *half)};
   
-  auto one{ std::make_unique<Scalar>(input, 1.0, "one") };
+  auto one{ std::make_unique<Scalar>("one", input, 1.0) };
   auto _xp1{ scalarAdd(graph, *x, *one)};
   auto log_xp1{ scalarLog(graph, *_xp1)};
 
@@ -539,17 +539,17 @@ void testForwardProp()
   
   DirectedGraph<Variable*> graph{};
   
-  auto x{ std::make_unique<Scalar>(input, 2.0, "x") };
+  auto x{ std::make_unique<Scalar>("x", input, 2.0) };
   auto _x2{ scalarMul(graph, *x, *x) };
   auto _x3{ scalarMul(graph, *x, *_x2) };
 
-  auto five{ std::make_unique<Scalar>(input, 5.0, "five") };
+  auto five{ std::make_unique<Scalar>("five", input, 5.0) };
   auto _5x2{ scalarMul(graph, *five, *_x2) };
 
-  auto ten{ std::make_unique<Scalar>(input, 10.0, "ten") };
+  auto ten{ std::make_unique<Scalar>("ten", input, 10.0) };
   auto _10x{ scalarMul(graph, *ten, *x) };
 
-  auto twenty{ std::make_unique<Scalar>(input, 20.0, "twenty") };
+  auto twenty{ std::make_unique<Scalar>("twenty", input, 20.0) };
   
   auto ps1{ scalarSub(graph, *_x3, *_5x2) };
   auto ps2{ scalarSub(graph, *_10x, *twenty) };

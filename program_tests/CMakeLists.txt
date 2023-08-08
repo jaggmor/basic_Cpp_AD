@@ -21,4 +21,9 @@ add_executable(test_unitcl unit_class.test.cc)
 target_link_libraries(test_unitcl lib_Autodiff)
 add_test(NAME Test_Unit_Class COMMAND test_unitcl)
 
+# Add util functions test
+add_executable(test_functions functions.test.cc)
+target_link_libraries(test_functions lib_Autodiff)
+add_test(NAME Test_Functions COMMAND test_functions)
+
 

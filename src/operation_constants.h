@@ -2,7 +2,8 @@
 #ifndef OPERATION_CONSTANTS_H
 #define OPERATION_CONSTANTS_H
 
-#include "Input.h"
+#include "input_constant.h"
+
 #include "ScalarAdd.h"
 #include "ScalarSub.h"
 #include "ScalarMul.h"
@@ -12,7 +13,6 @@
 #include "ScalarLog.h"
 #include "ScalarAbs.h"
 
-inline const Input input{};
 inline const ScalarAdd scalarAdd{};
 inline const ScalarSub scalarSub{};
 inline const ScalarMul scalarMul{};

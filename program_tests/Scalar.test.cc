@@ -19,7 +19,6 @@ int main()
   Scalar s_dea{input, 0.0};
   Scalar s_def{input, 1.};
 
-
   assert(s_dea.getValue() == 0.0 && "Default init was not 0.0");
   assert(s_def.getValue() == 1.0 && "Defined init set to 1.0 was not 1.o as specified");
 
@@ -30,8 +29,8 @@ int main()
   assert(s_def.getValue() == 2.0);
 
   // Test that the operations are working as they should.
-  Scalar x{ input, 3.0, "x" };
-  Scalar y{ input, 6.0, "y" };
+  Scalar x{ "x", input, 3.0 };
+  Scalar y{ "y", input, 6.0 };
   
   assert( x.add(y) == 9.0 && "Addition not working properly" );
   assert( x.subtract(y) == -3.0 && "Subtraction not working properly");
@@ -61,7 +60,7 @@ int main()
   std::cout << "Variables for test printed as:\n" << x << '\n' << y << '\n';
   
   // Test that std::move will not move a heap allocated Scalar from its initial position.
-  std::unique_ptr<Scalar> z{ std::make_unique<Scalar>(input, 42.0, "z") };
+  std::unique_ptr<Scalar> z{ std::make_unique<Scalar>("z", input, 42.0) };
   Variable* old_ptr{ z.get() };
 
   std::vector<std::unique_ptr<Variable>> vars{};
