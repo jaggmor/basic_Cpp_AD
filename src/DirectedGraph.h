@@ -319,20 +319,22 @@ void DirectedGraph<T>::pruneMultiple(const std::vector<T>& removedElements)
 template <typename T>
 void DirectedGraph<T>::mergeElements(const T& keptElement, const T& mergedElement)
 {
-  // removeFromInputs(const T& removeElement, const T& nodeElement);
-  // Edge<T>{tail, head}
-  // Iterate over the inputs and consumers of the merged element
+  /** @invariant For two elements a <=> b their order of apperance in inputs and consumers
+   *             must remain the same!
+   */
   for (const T& inputOfMerge : m_graphMap.at(mergedElement).inputs)
     {
-      addEdgeElements(inputOfMerge, keptElement);
-      removeFromConsumers(mergedElement, inputOfMerge);
+      // Inside the consumers of each input to the merged elements...
+      auto& consumersOfInput{m_graphMap.at(inputOfMerge).consumers};
+      // ... replace the merged element with the kept element.
+      std::replace(consumersOfInput.begin(), consumersOfInput.end(), mergedElement, keptElement);
     }
   for (const T& consumerOfMerge : m_graphMap.at(mergedElement).consumers)
     {
-      addEdgeElements(keptElement, consumerOfMerge);
-      removeFromInputs(mergedElement, consumerOfMerge);
+      auto& inputsOfConsumer{m_graphMap.at(consumerOfMerge).inputs};
+      std::replace(inputsOfConsumer.begin(), inputsOfConsumer.end(), mergedElement, keptElement);
     }
-  // Remove from the graph at the end
+  // Finally remove the merged element from the graph.
   m_graphMap.erase(mergedElement);
 }
 
@@ -352,25 +354,23 @@ void DirectedGraph<T>::absorbDisjoint(DirectedGraph<T>& o_graph,
 template <typename T>
 void DirectedGraph<T>::absorb(DirectedGraph<T>& o_graph)
 {
-  // A normal merge implies that some elements are equal in the graphs. Thus the connections
-  // for the added node should be correct, but not necessarily
+  // A normal merge implies that some elements are equal in the graphs.
   m_graphMap.merge(o_graph.m_graphMap);
-  debug_printHashMap(m_graphMap);
-  debug_printHashMap(o_graph.m_graphMap);
+  std::cout << "FML\n";
   assert(o_graph.m_graphMap.size() > 0 && "Merging two disjoint graphs.");
-  for (const auto& [copyKey, node] : o_graph.m_graphMap)
+  for (auto& pair : o_graph.m_graphMap)
     {
-      for (const T& copyInput : node.inputs)
+      for (const T& copyInput : pair.second.inputs)
 	{
-	  m_graphMap.at(copyKey).inputs.push_back(copyInput);
+	  m_graphMap.at(pair.first).inputs.push_back(copyInput);
 	}
-      for (const T& copyConsumer : node.consumers)
+      for (const T& copyConsumer : pair.second.consumers)
 	{
-	  m_graphMap.at(copyKey).consumers.push_back(copyConsumer);
+	  m_graphMap.at(pair.first).consumers.push_back(copyConsumer);
 	}
-      o_graph.m_graphMap.erase(copyKey);
+      // NEVER EVER TOUCH ANYTHING YOU ITERATE OVER WITH AN ITERATOR OR ANYTHIN ELSE OK??!!!!!!
     }
-  assert(o_graph.isEmpty());
+  o_graph.flush();
 }
 
 #endif
