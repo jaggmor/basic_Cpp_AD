@@ -16,12 +16,15 @@ using std::log, std::abs, std::pow, std::exp;
 using In = Unit;
 
 template <typename F>
-bool equals(Unit& f_graph, F f, const double x=2.0) {
+bool equals(Unit& f_graph, F f, const double x=2.0, const bool print=false) {
   constexpr double eps{1e-3};
   if (f_graph.forward(x) - f(x) > eps) {
     std::stringstream ss{};
     ss << f_graph.forward(x) << " != " << f(x) << " for x=" << x << '\n';
     throw IncorrectValueException( ss.str() );
+  }
+  if (print) {
+    std::cout << f_graph.forward(x) << " == " << f(x) << " for x=" << x << '\n';
   }
   return true;
 }
@@ -47,17 +50,15 @@ void testMultiUnit() {
     Unit u{ Scalar{"x", input, 2.0} };
     u.xpn(3).sub(Unit{Scalar{"x", input, 2.0}}.xpn(2));
     u.printGraph();
-    equals(u, f, 2.0);
+    equals(u, f, 4.0);
     std::cout << "----------\n";
   }
 
   {
-    // Now for the ultimate test:
-    // ((x^3)^(1/2) * log(x) + abs(x - x^2) )/(exp(x))
-    // ((x^3)^(1/2) * log(x))/(exp(x))
-    // (pow(x*x*x, 0.5) * log(x) - (x*x - log(x)))/exp(x)
+    // Testing all available operations.
+    // ( sqrt(x^3) * log(x) - (x^2 - abs(x)) )/(exp(x) + x)
     auto f{[](double x){
-	     return (pow(x*x*x, 0.5) * log(x) - (x*x - log(x)))/exp(x);
+	     return (pow(x*x*x, 0.5) * log(x) - (x*x - abs(x)))/(exp(x) + log(x));
 	   }};
     Unit gf{Scalar{"x"}};
     gf
@@ -65,8 +66,9 @@ void testMultiUnit() {
       .xpn(0.5)
       .mul( Unit{Scalar{"x"}}.log() )
       .sub( Unit{Scalar{"x"}}.xpn(2)
-	    .sub( Unit{Scalar{"x"}}.log() ) )
-      .div( Unit{Scalar{"x"}}.exp() );
+	    .sub( Unit{Scalar{"x"}}.abs() ) )
+      .div( Unit{Scalar{"x"}}.exp()
+	    .add( Unit{Scalar{"x"}}.log() ) );
     
     std::cout << "loop test\n";
     const double arr[] = {0.02133, 0.123, 1.2314, 10.1234};
@@ -74,10 +76,26 @@ void testMultiUnit() {
       equals(gf, f, x);
       std::cout << gf.forward(x) << " ?= " << f(x) << '\n';
     }
+
+    
   }
 }
 
-
+void testJoiningUnits() {
+  auto f{ [](double x){ return x/(x+1); } };
+  
+  Unit fun{Scalar("x")};
+  for (int i{0}; i < 3; ++i) {
+    // We create multiple layers of g(x) = x/(1 + x)
+    Unit gun{Scalar{"x"}};
+    gun.div(Unit{Scalar{"x"}}.add(1));
+    fun.join(gun);
+  }
+  const double values[] = {0.1241, 2.123124, 22.123, 123.34};
+  for (const double x : values) {
+    equals(fun, [&f](double x){ return f(f(f(x))); }, x, true);
+  }
+}
 
 #if FIXED_COPY_CONSTRUCTOR
 void testConstructFromRef()
@@ -119,5 +137,6 @@ int main() {
   std::cout << "Test start\n";
   testSingularUnit();
   testMultiUnit();
+  testJoiningUnits();
   std::cout << "Test Complete!\n";
 }

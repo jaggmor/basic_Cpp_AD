@@ -8,8 +8,8 @@
 
 #include <vector>
 #include <memory>
-#include <unordered_set>
 #include <sstream>
+#include <utility>
 
 using uvptr = std::unique_ptr<Variable>;
   
@@ -63,25 +63,15 @@ private:
     m_varsContainer.push_back(std::move(res));
   }
 
-  void binaryOp(Unit& o_unit, const OperationBinary& operation) {    
-    assert(getInput().getName() == o_unit.getInput().getName()); // Only equal inputs for now.
-
-    Variable& this_output{getOutput()};        // Save references to the outputs;
-    Variable& othr_output{o_unit.getOutput()}; //
-      
-    // 1. Find the common leafs.
-    auto comparator{[](const Variable* v1, const Variable* v2) { // Variables are merged if they
-		      return v1->getName() == v2->getName();     // have the same name.
-		    }};
-    auto matches{ util::intersect(m_leafs, o_unit.m_leafs, comparator) };
-    // Until multiple inputs are allowed the inputs must provide at least one match.
-    assert( matches.size() > 0 && "Must have at least some matching variables."); 
-    
-    // 2. Merge the graph from o_unit into *this. The graphs should not have any common elements
+  /* Performs a matched merge with o_unit. o_ubut will be left in an indeterminate state.*/
+  void matchedMerge(Unit& o_unit, const std::vector<std::pair<Variable*, Variable*>>& matches)
+  {
+    assert( matches.size() > 0 && "Can't merge two disjoint graphs without any matches.");
+    // Merge the graph from o_unit into *this. The graphs should not have any common elements
     // since each unit is designed to have exclusive ownership over its variables.
     m_graph.absorbDisjoint(o_unit.m_graph, matches);
     
-    // 3. transfer ownership from the other unit.
+    // transfer ownership from the other unit.
     // First all variables are moved from the other unit's containter except the matched ones.
     for (int i{0}; uvptr& varuptr : o_unit.m_varsContainer) {
       if (i < matches.size() && varuptr.get() == matches[i].second) { 
@@ -100,13 +90,28 @@ private:
     }
     o_unit.m_varsContainer.clear(); // Now we clean the other object's list into its null state.
     o_unit.m_leafs.clear();
-
+  }
+  
+  void binaryOp(Unit& o_unit, const OperationBinary& operation) {    
+    assert(getInput().getName() == o_unit.getInput().getName()); // Only equal inputs for now.
+    
+    Variable& this_output{getOutput()};        // Save references to the outputs;
+    Variable& othr_output{o_unit.getOutput()}; //
+      
+    // Find the common leafs.
+    auto comparator{[](const Variable* v1, const Variable* v2) { // Variables are merged if they
+		      return v1->getName() == v2->getName();     // have the same name.
+		    }};
+    auto matches{ util::intersect(m_leafs, o_unit.m_leafs, comparator) };
+    // Until multiple inputs are allowed the inputs must provide at least one match.
+    assert( matches.size() > 0 && "Must have at least some matching variables.");
+    matchedMerge(o_unit, matches);    
     // also, how do we know which add to use? More control flow will be requiered here.
     auto res{ operation(m_graph, this_output, othr_output) };
     // No need to push back anything else than the result which is of course not a leaf
     m_varsContainer.push_back(std::move(res));
   }
-
+  
 public:
   Unit(Scalar&& scalar) {
     uvptr x{ std::make_unique<Scalar>(std::move(scalar)) }; // Move to heap for longer lifetime.
@@ -172,6 +177,22 @@ public:
     unaryOp(scalarExp);
     return *this;
   }
+  /**
+   * @brief Joins output of this unit with input of other unit.
+   */
+  Unit& join(Unit& n_unit) {
+    const auto& thisOutLen{ this->getOutput().getLengths() };
+    const auto& othrInLen{ n_unit.getInput().getLengths() };    
+    if (thisOutLen.size() != othrInLen.size() || thisOutLen != othrInLen) {
+      throw InvalidOperationException("Joining elements have different sizes"); 
+    }
+    // Input and output have equal dimensions.
+    std::vector<std::pair<Variable*, Variable*>> inOutMatch{    // Should delete input leaf after 
+      std::make_pair(&this->getOutput(), &n_unit.getInput()) }; // disjointAbsorb.
+    matchedMerge(n_unit, inOutMatch);
+    return *this;
+  }
+
   double forward(double inputValue) {
     // Setting the value for the input will result in a different output.
     Scalar::setValue( getInput(), inputValue );

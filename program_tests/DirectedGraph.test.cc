@@ -1,18 +1,25 @@
 
-
 #include "DirectedGraph.h"
 #include <cassert>
 #include <vector>
 #include <iostream>
 #include <utility>
+#include <algorithm>
 
+#define PRINT 0
 
 int constexpr someNodes[]{2, 4, 6, 8, 10, 100, -10, 42};
 
 
-void printLine()
+static void printLine()
 {
   std::cout << "\n------------------------\n";
+}
+
+template <typename T>
+static bool findIn(const std::vector<T>& vector, T el)
+{
+  return (std::find(vector.begin(), vector.end(), el) != vector.end()) ? true : false;
 }
 
 void createPrintEmptyIntGraph(DirectedGraph<int>& graph)
@@ -129,8 +136,11 @@ void testGetConsumersInputs()
 
 void testAbsorbingGraphs()
 {
-  std::cout << "Testing with normal graph\n";
+#if PRINT
+  std::cout << "Testing absorb\n";
+#endif
   {
+    // For these graphs some elements must be equal. Those elements will be merged.
     DirectedGraph<int> graph1{};
     graph1.addConnection(1, 3);
     graph1.addConnection(2, 3);
@@ -143,15 +153,34 @@ void testAbsorbingGraphs()
     graph2.addConnection(5, 7);
     graph2.addConnection(6, 7);
     graph1.absorb(graph2);
+    const auto& c3{graph1.getNodeConsumers(3)};
+    const auto& i3{graph1.getNodeInputs(3)};
+
+    // All this should hold after merge
+    assert(c3.size() == 3 && i3.size() == 2);
+    assert( graph1.getNodeInputs(10).size() == 1 );
+    assert( graph1.getNodeInputs(5).size() == 1 );
+    assert( graph1.getNodeInputs(6).size() == 1 );
+    assert( graph1.getNodeConsumers(1).size() == 1 );
+    assert( graph1.getNodeConsumers(2).size() == 1 );
+    assert( findIn(c3, 10) && findIn(c3, 5) && findIn(c3, 6) );
+    assert( findIn(i3, 1) && findIn(i3, 2) );
+    assert( findIn(graph1.getNodeInputs(10), 3) );
+    assert( findIn(graph1.getNodeInputs(5), 3) );
+    assert( findIn(graph1.getNodeInputs(6), 3) );
+    assert( findIn(graph1.getNodeConsumers(1), 3) );
+    assert( findIn(graph1.getNodeConsumers(2), 3) );
+    
+#if PRINT
     std::cout << "Graph 1\n-----------\n";
     graph1.printGraph();
     std::cout << "Graph 2\n-----------\n";
     graph2.printGraph();
+#endif
   }
-
-  std::cout << "Now testing with a linked graph\n";
   {
     DirectedGraph<int> graph1{};
+    graph1.addConnection(0, 1);
     graph1.addConnection(1, 2);
     graph1.addConnection(2, 3);
     graph1.addConnection(3, 4);
@@ -160,18 +189,32 @@ void testAbsorbingGraphs()
     graph2.addConnection(4, 5);
     graph2.addConnection(5, 6);
     graph2.addConnection(6, 7);
-    graph2.addConnection(7, 1);
+    graph2.addConnection(7, 0);
+
     graph1.absorb(graph2);
+    // After merge we should have a looped linked list. Let's do a cool test for this.
+    for (int i{0}, currentElement{0}; i < 100; ++i)
+      {
+	const auto& consumers{ graph1.getNodeConsumers(currentElement) };
+	assert(consumers.size() == 1 && "");
+	assert(currentElement == i % 8);
+	currentElement = consumers[0];
+      }
+    
+#if PRINT
     std::cout << "Graph 1\n-----------\n";
     graph1.printGraph();
     std::cout << "Graph 2\n-----------\n";
     graph2.printGraph();
+#endif
   }
 }
 
 void testAssociationAbsorb()
 {
-  std::cout << "Testing association absorb with normal graph\n";
+#if PRINT
+  std::cout << "Testing association absorb, i.e. absorbDisjoint.\n";
+#endif
   {
     DirectedGraph<int> graph1{};
     graph1.addConnection(1, 3);
@@ -187,41 +230,70 @@ void testAssociationAbsorb()
 
     // We make the association 3 <=> 4
     std::vector<std::pair<int, int>> av{ std::make_pair(3, 4) };
-    
-    //graph1.absorbDisjoint(graph2, av);
+    graph1.absorbDisjoint(graph2, av);
+
+    const auto& c3{ graph1.getNodeConsumers(3) };
+    const auto& i3{ graph1.getNodeInputs(3) };
+    // All this should hold after merge
+    assert(c3.size() == 3 && i3.size() == 2);
+    assert( graph1.getNodeInputs(10).size() == 1 );
+    assert( graph1.getNodeInputs(5).size() == 1 );
+    assert( graph1.getNodeInputs(6).size() == 1 );
+    assert( graph1.getNodeConsumers(1).size() == 1 );
+    assert( graph1.getNodeConsumers(2).size() == 1 );
+    assert( findIn(c3, 10) && findIn(c3, 5) && findIn(c3, 6) );
+    assert( findIn(i3, 1) && findIn(i3, 2) );
+    assert( findIn(graph1.getNodeInputs(10), 3) );
+    assert( findIn(graph1.getNodeInputs(5), 3) );
+    assert( findIn(graph1.getNodeInputs(6), 3) );
+    assert( findIn(graph1.getNodeConsumers(1), 3) );
+    assert( findIn(graph1.getNodeConsumers(2), 3) );
+
+#if PRINT
     std::cout << "Graph 1\n-----------\n";
     graph1.printGraph();
     std::cout << "Graph 2\n-----------\n";
     graph2.printGraph();
+#endif
   }
-
-  std::cout << "Now testing with a linked graph and association \n";
+  
   {
     DirectedGraph<int> graph1{};
     graph1.addConnection(0, 1);
     graph1.addConnection(1, 2);
     graph1.addConnection(2, 3);
+    graph1.addConnection(3, 4);
   
     DirectedGraph<int> graph2{};
-    graph2.addConnection(4, 5);
+    graph2.addConnection(42, 5);
     graph2.addConnection(5, 6);
     graph2.addConnection(6, 7);
-    graph2.addConnection(7, 8);
-
-    std::vector<std::pair<int, int>> av{ std::make_pair(0, 8), std::make_pair(3, 4) };
+    graph2.addConnection(7, 69);
     
-    //graph1.absorbDisjoint(graph2, av);
+    std::vector<std::pair<int, int>> av{ std::make_pair(4, 42), std::make_pair(0, 69) };
+    graph1.absorbDisjoint(graph2, av);
+
+    for (int i{0}, currentElement{0}; i < 100; ++i)
+      {
+	const auto& consumers{ graph1.getNodeConsumers(currentElement) };
+	assert(consumers.size() == 1 && "");
+	assert(currentElement == i % 8);
+	currentElement = consumers[0];
+      }
+
+#if PRINT
     std::cout << "Graph 1\n-----------\n";
     graph1.printGraph();
     std::cout << "Graph 2\n-----------\n";
     graph2.printGraph();
+#endif
   }
 }
 
 
 int main()
 {
-  // Here we also test the flush function.
+  // Here also test the flush function and constructor.
   [[maybe_unused]] DirectedGraph<int> graph{};
   createPrintEmptyIntGraph(graph);
   createPrintLinkedListIntGraph(graph.flush());

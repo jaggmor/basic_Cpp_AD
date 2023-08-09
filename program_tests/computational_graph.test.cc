@@ -158,15 +158,6 @@ void buildAddGraphAndEvaluateIt()
   graph.printGraph(customPrint);
 }
 
-#if 0
-Gradient bprop(const std::vector<Variable*>& inputs, const Variable& diff_var,
-	       Gradient gradient) const override
-{
-  // The gradient of a + b = y w.r.t. a or b is always 1.0.
-  return Gradient{ 1.0 * gradient[0] };
-  }
-#endif
-
 void walk_gradient(Variable& var, DirectedGraph<Variable*>& graph,
 		   map<Variable*, Gradient>& grad_table, map<Variable*, int>& visits)
 {
