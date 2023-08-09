@@ -15,6 +15,8 @@
 using std::log, std::abs, std::pow, std::exp;
 using In = Unit;
 
+const double values[] = {0.1241, 2.123124, 22.123, 123.34};
+
 template <typename F>
 bool equals(Unit& f_graph, F f, const double x=2.0, const bool print=false) {
   constexpr double eps{1e-3};
@@ -25,6 +27,19 @@ bool equals(Unit& f_graph, F f, const double x=2.0, const bool print=false) {
   }
   if (print) {
     std::cout << f_graph.forward(x) << " == " << f(x) << " for x=" << x << '\n';
+  }
+  return true;
+}
+
+bool equals(const double v1, const double v2, const double x, const bool print=false) {
+  constexpr double eps{1e-3};
+  if (v1 - v2 > eps) {
+    std::stringstream ss{};
+    ss << v1 << " != " << v2 << " for x=" << x << '\n';
+    throw IncorrectValueException( ss.str() );
+  }
+  if (print) {
+    std::cout << v1 << " == " << v2 << " for x=" << x << '\n';
   }
   return true;
 }
@@ -69,8 +84,6 @@ void testMultiUnit() {
 	    .sub( Unit{Scalar{"x"}}.abs() ) )
       .div( Unit{Scalar{"x"}}.exp()
 	    .add( Unit{Scalar{"x"}}.log() ) );
-    
-    std::cout << "loop test\n";
     const double arr[] = {0.02133, 0.123, 1.2314, 10.1234};
     for (const double x : arr) {
       equals(gf, f, x);
@@ -91,23 +104,51 @@ void testJoiningUnits() {
     gun.div(Unit{Scalar{"x"}}.add(1));
     fun.join(gun);
   }
-  const double values[] = {0.1241, 2.123124, 22.123, 123.34};
   for (const double x : values) {
-    equals(fun, [&f](double x){ return f(f(f(x))); }, x, true);
+    equals(fun, [&f](double x){ return f(f(f(x))); }, x);
   }
 }
 
 void testBackprop() {
-  // Let's make a simple function and test calculating its derivative.
-  constexpr auto f { [](const double x) { return x*x*x - x*x + x - 5;} };
-  constexpr auto fp{ [](const double x) { return 3*x*x - 2*x + 1 ;} };
-  Unit fg{Scalar{"x"}};
-  fg.xpn(3)
-    .sub(Unit{Scalar{"x"}}.xpn(2))
-    .add(Unit{Scalar{"x"}}.xpn(1))
-    .sub(5);
-  equals(fg, f);
-  std::cout << "Does the derivative work...: " << fg.backward(10.) << " ?= " << fp(10.) << '\n';
+  {
+    // Let's make a simple function and test calculating its derivative.
+    constexpr auto f { [](const double x) { return x*x*x - x*x + x - 5;} };
+    constexpr auto fp{ [](const double x) { return 3*x*x - 2*x + 1 ;} };
+    Unit fg{Scalar{"x"}};
+    fg.xpn(3)
+      .sub(Unit{Scalar{"x"}}.xpn(2))
+      .add(Unit{Scalar{"x"}}.xpn(1))
+      .sub(5);
+    for (const double x : values) {
+      equals(fg.forward(x), f(x), x);
+      equals(fg.backward(x), fp(x), x);
+    }
+  }
+  {
+    // Let's make a monster function and test calculating its derivative.
+    constexpr auto f { [](const double x) {
+			 return (pow(x*x*x, 0.5) * log(x) - (x*x - abs(x)))/(exp(x) + log(x));
+		       }};
+    constexpr auto fp{ [](const double x) {
+			 return (pow(x, 0.5) - 2*x + x/abs(x) + 1.5*pow(x, 0.5)*log(x))
+			   /(exp(x) + log(x))
+			   - ((exp(x) + 1/x)*(-x*x + abs(x) + pow(x, 1.5)*log(x)))
+			   /pow(exp(x) + log(x), 2);
+		       } };
+    Unit fg{Scalar{"x"}};
+    fg
+      .xpn(3)
+      .xpn(0.5)
+      .mul( Unit{Scalar{"x"}}.log() )
+      .sub( Unit{Scalar{"x"}}.xpn(2)
+	    .sub( Unit{Scalar{"x"}}.abs() ) )
+      .div( Unit{Scalar{"x"}}.exp()
+	    .add( Unit{Scalar{"x"}}.log() ) );
+    for (const double x : values) {
+      equals(fg.forward(x), f(x), x);
+      equals(fg.backward(x), fp(x), x);
+    }
+  }  
 }
 
 #if FIXED_COPY_CONSTRUCTOR
@@ -151,6 +192,6 @@ int main() {
   testSingularUnit();
   testMultiUnit();
   testJoiningUnits();
+  testBackprop(); 
   std::cout << "Test Complete!\n";
-  testBackprop();
 }
