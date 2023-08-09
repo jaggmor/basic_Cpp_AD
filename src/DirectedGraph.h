@@ -326,13 +326,17 @@ void DirectedGraph<T>::mergeElements(const T& keptElement, const T& mergedElemen
     {
       // Inside the consumers of each input to the merged elements...
       auto& consumersOfInput{m_graphMap.at(inputOfMerge).consumers};
-      // ... replace the merged element with the kept element.
+      // ... replace the merged element with the kept element...
       std::replace(consumersOfInput.begin(), consumersOfInput.end(), mergedElement, keptElement);
+      // ... and finally att the input to the kept element.
+      m_graphMap.at(keptElement).inputs.push_back(inputOfMerge);
+      // Hopefully this will place it in order and operations will work for computational graphs.
     }
   for (const T& consumerOfMerge : m_graphMap.at(mergedElement).consumers)
     {
       auto& inputsOfConsumer{m_graphMap.at(consumerOfMerge).inputs};
       std::replace(inputsOfConsumer.begin(), inputsOfConsumer.end(), mergedElement, keptElement);
+      m_graphMap.at(keptElement).consumers.push_back(consumerOfMerge);
     }
   // Finally remove the merged element from the graph.
   m_graphMap.erase(mergedElement);

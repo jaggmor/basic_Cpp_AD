@@ -15,7 +15,6 @@ void printLine()
   std::cout << "\n------------------------\n";
 }
 
-
 void createPrintEmptyIntGraph(DirectedGraph<int>& graph)
 {
   printLine();
@@ -27,7 +26,6 @@ void createPrintEmptyIntGraph(DirectedGraph<int>& graph)
     }
   graph.printGraph();
 }
-
 
 void createPrintLinkedListIntGraph(DirectedGraph<int>& graph)
 {
@@ -50,7 +48,6 @@ void createPrintLinkedListIntGraph(DirectedGraph<int>& graph)
     }
   graph.printGraph();
 }
-
 
 void createPrintAllToAllIntGraph(DirectedGraph<int>& graph)
 {
@@ -75,7 +72,6 @@ void createPrintAllToAllIntGraph(DirectedGraph<int>& graph)
   graph.printGraph();
 }
 
-
 void testPruning()
 {
   printLine();
@@ -91,7 +87,6 @@ void testPruning()
   graph.printGraph();    
   
 }
-
 
 void testAddEdges()
 {
@@ -109,7 +104,6 @@ void testAddEdges()
 
   graph.printGraph();
 }
-
 
 void testGetConsumersInputs()
 {
@@ -194,7 +188,7 @@ void testAssociationAbsorb()
     // We make the association 3 <=> 4
     std::vector<std::pair<int, int>> av{ std::make_pair(3, 4) };
     
-    graph1.absorbDisjoint(graph2, av);
+    //graph1.absorbDisjoint(graph2, av);
     std::cout << "Graph 1\n-----------\n";
     graph1.printGraph();
     std::cout << "Graph 2\n-----------\n";
@@ -216,13 +210,14 @@ void testAssociationAbsorb()
 
     std::vector<std::pair<int, int>> av{ std::make_pair(0, 8), std::make_pair(3, 4) };
     
-    graph1.absorbDisjoint(graph2, av);
+    //graph1.absorbDisjoint(graph2, av);
     std::cout << "Graph 1\n-----------\n";
     graph1.printGraph();
     std::cout << "Graph 2\n-----------\n";
     graph2.printGraph();
   }
 }
+
 
 int main()
 {

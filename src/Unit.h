@@ -63,45 +63,34 @@ private:
     m_varsContainer.push_back(std::move(res));
   }
 
-#if 0
-  // Need to be able to add two units together
-  void binaryOp(Unit& o_unit, const OperationBinary& operation) {
-    // We only support the same input for now.
-    assert(getInput().getName() == o_unit.getInput().getName());
+  void binaryOp(Unit& o_unit, const OperationBinary& operation) {    
+    assert(getInput().getName() == o_unit.getInput().getName()); // Only equal inputs for now.
 
-    // We save references to the outputs;
-    Variable& this_output{getOutput()};
-    Variable& othr_output{o_unit.getOutput()};
+    Variable& this_output{getOutput()};        // Save references to the outputs;
+    Variable& othr_output{o_unit.getOutput()}; //
       
-    // AS OF NOW THIS CODE DOES NOT SUPPORT MULTIPLE INPUTS.
     // 1. Find the common leafs.
-    // First we define a comparator that compares two variable objects by their name.
-    auto comparator{[](const Variable* v1, const Variable* v2) {
-		      return v1->getName() == v2->getName();
+    auto comparator{[](const Variable* v1, const Variable* v2) { // Variables are merged if they
+		      return v1->getName() == v2->getName();     // have the same name.
 		    }};
     auto matches{ util::intersect(m_leafs, o_unit.m_leafs, comparator) };
-
-    // Since we do not yet support multiple inputs the following assertion holds.
-    // absorbDisjoint will otherwise crash. This could be fixed quite easily later by simpluy calling
-    // absorb if matches is empty. We may want to replace the getInput by some other method later.
-    // This will also ensure that the lookup in matches does not crash below.
-    assert( matches.size() > 0 && "Must have at least some matching variables.");
+    // Until multiple inputs are allowed the inputs must provide at least one match.
+    assert( matches.size() > 0 && "Must have at least some matching variables."); 
     
-    // 2. Merge the graph from unit into *this. The graphs should not have any common elements
-    // since each unit has exclusive ownership.
+    // 2. Merge the graph from o_unit into *this. The graphs should not have any common elements
+    // since each unit is designed to have exclusive ownership over its variables.
     m_graph.absorbDisjoint(o_unit.m_graph, matches);
     
     // 3. transfer ownership from the other unit.
-    // First we want to move all variables from the other unit's containter
-    // except the associated ones
+    // First all variables are moved from the other unit's containter except the matched ones.
     for (int i{0}; uvptr& varuptr : o_unit.m_varsContainer) {
-      if (i < matches.size() && varuptr.get() == matches[i].second) {
-	// other varuptr equivalent element in this unit.
-	++i;
+      if (i < matches.size() && varuptr.get() == matches[i].second) { 
+	++i;   // Matched vars appear in order.
       } else { 
 	m_varsContainer.emplace_back(std::move(varuptr));
       }
     }
+    // Also transfer leafs.
     for (int i{0}; Variable* varptr : o_unit.m_leafs) {
       if (i < matches.size() && varptr == matches[i].second) {
 	++i;
@@ -109,20 +98,14 @@ private:
 	m_leafs.push_back(varptr);
       }
     }
-    // Now we clean the other object's list into its null state.      
-    o_unit.m_varsContainer.clear();
+    o_unit.m_varsContainer.clear(); // Now we clean the other object's list into its null state.
     o_unit.m_leafs.clear();
 
-    // Now we need to add the outputs...
-    // TODO This needs some control flow!
-
     // also, how do we know which add to use? More control flow will be requiered here.
-    auto res{ scalarAdd(m_graph, this_output, othr_output) };
+    auto res{ operation(m_graph, this_output, othr_output) };
     // No need to push back anything else than the result which is of course not a leaf
     m_varsContainer.push_back(std::move(res));
-    return *this;
   }
-#endif
 
 public:
   Unit(Scalar&& scalar) {
@@ -131,86 +114,46 @@ public:
     m_leafs.push_back(x.get());
     m_varsContainer.push_back(std::move(x));
   }
-  
   Variable& getInput() {
     return *(m_varsContainer.front());
   }
   Variable& getOutput() {
     return *(m_varsContainer.back());
   }
-  // Need to be able to add two units together
   Unit& add(Unit& o_unit) {
-    // We only support the same input for now.
-    assert(getInput().getName() == o_unit.getInput().getName());
-
-    // We save references to the outputs;
-    Variable& this_output{getOutput()};
-    Variable& othr_output{o_unit.getOutput()};
-      
-    // AS OF NOW THIS CODE DOES NOT SUPPORT MULTIPLE INPUTS.
-    // 1. Find the common leafs.
-    // First we define a comparator that compares two variable objects by their name.
-    auto comparator{[](const Variable* v1, const Variable* v2) {
-		      return v1->getName() == v2->getName();
-		    }};
-    auto matches{ util::intersect(m_leafs, o_unit.m_leafs, comparator) };
-
-    // Since we do not yet support multiple inputs the following assertion holds.
-    // absorbDisjoint will otherwise crash. This could be fixed quite easily later by simpluy calling
-    // absorb if matches is empty. We may want to replace the getInput by some other method later.
-    // This will also ensure that the lookup in matches does not crash below.
-    assert( matches.size() > 0 && "Must have at least some matching variables.");
-    
-    // 2. Merge the graph from unit into *this. The graphs should not have any common elements
-    // since each unit has exclusive ownership.
-    m_graph.absorbDisjoint(o_unit.m_graph, matches);
-    
-    // 3. transfer ownership from the other unit.
-    // First we want to move all variables from the other unit's containter
-    // except the associated ones
-    for (int i{0}; uvptr& varuptr : o_unit.m_varsContainer) {
-      if (i < matches.size() && varuptr.get() == matches[i].second) {
-	// other varuptr equivalent element in this unit.
-	++i;
-      } else { 
-	m_varsContainer.emplace_back(std::move(varuptr));
-      }
-    }
-    for (int i{0}; Variable* varptr : o_unit.m_leafs) {
-      if (i < matches.size() && varptr == matches[i].second) {
-	++i;
-      } else {
-	m_leafs.push_back(varptr);
-      }
-    }
-    // Now we clean the other object's list into its null state.      
-    o_unit.m_varsContainer.clear();
-    o_unit.m_leafs.clear();
-
-    // Now we need to add the outputs...
-    // TODO This needs some control flow!
-
-    // also, how do we know which add to use? More control flow will be requiered here.
-    auto res{ scalarAdd(m_graph, this_output, othr_output) };
-    // No need to push back anything else than the result which is of course not a leaf
-    m_varsContainer.push_back(std::move(res));
+    binaryOp(o_unit, scalarAdd);
     return *this;
   }
-  
   Unit& add(double alpha) {
     binaryOp(alpha, scalarAdd);
     return *this;
-  }  
+  }
+  Unit& mul(Unit& o_unit) {
+    binaryOp(o_unit, scalarMul);
+    return *this;
+  }
   Unit& mul(double mu) {
     binaryOp(mu, scalarMul);
+    return *this;
+  }
+  Unit& sub(Unit& o_unit) {
+    binaryOp(o_unit, scalarSub);
     return *this;
   }
   Unit& sub(double sigma) {
     binaryOp(sigma, scalarSub);
     return *this;
   }  
+  Unit& div(Unit& o_unit) {
+    binaryOp(o_unit, scalarDiv);
+    return *this;
+  }
   Unit& div(double delta) {
     binaryOp(delta, scalarDiv);
+    return *this;
+  }
+  Unit& xpn(Unit& o_unit) {
+    binaryOp(o_unit, scalarXpn);
     return *this;
   }
   Unit& xpn(double xi) {

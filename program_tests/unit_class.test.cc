@@ -15,6 +15,17 @@
 using std::log, std::abs, std::pow, std::exp;
 using In = Unit;
 
+template <typename F>
+bool equals(Unit& f_graph, F f, const double x=2.0) {
+  constexpr double eps{1e-3};
+  if (f_graph.forward(x) - f(x) > eps) {
+    std::stringstream ss{};
+    ss << f_graph.forward(x) << " != " << f(x) << " for x=" << x << '\n';
+    throw IncorrectValueException( ss.str() );
+  }
+  return true;
+}
+
 void testSingularUnit() {
   auto f{[](auto x){ return exp( pow(abs(log(5*x + 3) - 5), 0.5) )/2. ; }};
   // A singular unit is a unit with only one variable term, i.e. e^(log(5*x^5)^2) or (x^3)*5
@@ -22,29 +33,48 @@ void testSingularUnit() {
   // Unit unit{Scalar{input, 0.0, "x"}};
   // I enjoy the idea of the unit being a central bulding component and that Scalar, Matrix etc
   // are all hidden from the inteface.
-  constexpr double x{1.0};
-  Unit fg{ Scalar{"x"} };
-  fg.mul(5.0).add(3.0).log().sub(5.0).abs().xpn(0.5).exp().div(2.0);
-  if (fg.forward(x) != f(x)) {
-    std::stringstream ss{};
-    ss << fg.forward(x) << " != " << f(x) << '\n';
-    throw IncorrectValueException( ss.str() );
-  }
   
-  fg.printGraph();
+  Unit fg{ Scalar{"x"} };
+  fg.mul(5.0).add(3.0).log().sub(5.0).abs().xpn(0.5).exp().div(2.0);  
+  equals(fg, f);
   std::cout << "And then...\n";
-  fg.printLeafs();
 }
 
 void testMultiUnit() {
-  auto f{[](double x) { return x*x*x + x*x; }};
-  // x^3 - x^2
-  constexpr double x{2.0};
-  Unit u{ Scalar{"x", input, 2.0} };
-  u.xpn(3).add(Unit{Scalar{"x", input, 2.0}}.xpn(2));
-  u.printGraph();
-  std::cout << u.forward(x);
-  std::cout << " = " << f(x) << '\n';
+  {
+    // x^3 - x^2
+    auto f{[](double x) { return x*x*x - x*x; }};
+    Unit u{ Scalar{"x", input, 2.0} };
+    u.xpn(3).sub(Unit{Scalar{"x", input, 2.0}}.xpn(2));
+    u.printGraph();
+    equals(u, f, 2.0);
+    std::cout << "----------\n";
+  }
+
+  {
+    // Now for the ultimate test:
+    // ((x^3)^(1/2) * log(x) + abs(x - x^2) )/(exp(x))
+    // ((x^3)^(1/2) * log(x))/(exp(x))
+    // (pow(x*x*x, 0.5) * log(x) - (x*x - log(x)))/exp(x)
+    auto f{[](double x){
+	     return (pow(x*x*x, 0.5) * log(x) - (x*x - log(x)))/exp(x);
+	   }};
+    Unit gf{Scalar{"x"}};
+    gf
+      .xpn(3)
+      .xpn(0.5)
+      .mul( Unit{Scalar{"x"}}.log() )
+      .sub( Unit{Scalar{"x"}}.xpn(2)
+	    .sub( Unit{Scalar{"x"}}.log() ) )
+      .div( Unit{Scalar{"x"}}.exp() );
+    
+    std::cout << "loop test\n";
+    const double arr[] = {0.02133, 0.123, 1.2314, 10.1234};
+    for (const double x : arr) {
+      equals(gf, f, x);
+      std::cout << gf.forward(x) << " ?= " << f(x) << '\n';
+    }
+  }
 }
 
 
