@@ -5,6 +5,8 @@
 #include "OperationUnary.h"
 #include "OperationBinary.h"
 #include "util.h"
+#include "forwardProp.h"
+#include "backProp.h"
 
 #include <vector>
 #include <memory>
@@ -19,33 +21,7 @@ private:
   std::vector<uvptr> m_varsContainer{};
   std::vector<Variable*> m_leafs{};
   DirectedGraph<Variable*> m_graph{};
-  /**
-   * @note This method only works for the unit as long as we have ONE output and as long
-   *       as the Directed graph is acyclical, which must be the case in a computational 
-   *       graph since no computation can purely be a function of its own result.
-   */
-  static void visit(DirectedGraph<Variable*>& graph, Variable& currentVar) {      
-    if (currentVar.getOperation() == input) return; // Early return at leaf.
-    assert(currentVar.getInputs(graph).size() == 1 || currentVar.getInputs(graph).size() == 2);
-    for (Variable* input : currentVar.getInputs(graph)) {
-      visit(graph, *input);
-    }
-    // When all inputs are visited the current node is updated.
-    // In the future the updating can be made into a recursive function call for multithreading.
-    if (currentVar.getOperation().isUnary()) {
-      const Variable& input{ *currentVar.getInputs(graph).at(0) };
-      currentVar.getOperation().uop(input, currentVar);
-    } else if (currentVar.getOperation().isBinary()) {
-      const Variable& linput{ *currentVar.getInputs(graph).at(0) };
-      const Variable& rinput{ *currentVar.getInputs(graph).at(1) };
-      currentVar.getOperation().bop(linput, rinput, currentVar);
-    }
-    return;
-  }
-  static void forwardProp(DirectedGraph<Variable*>& graph, Variable& output) {
-    assert(output.getConsumers(graph).size() == 0 && "Output for a unit cannot have consumers.");
-    visit(graph, output);
-  }
+  
   void binaryOp(uvptr rightArg, const OperationBinary& operation) {
     auto res{ operation(m_graph, getOutput(), *rightArg) };
     m_leafs.push_back(rightArg.get());
@@ -192,12 +168,20 @@ public:
     matchedMerge(n_unit, inOutMatch);
     return *this;
   }
-
+  // @note The output must be scalar.
   double forward(double inputValue) {
     // Setting the value for the input will result in a different output.
     Scalar::setValue( getInput(), inputValue );
+    return Scalar::value( forwardProp(m_graph, getOutput()) );
+  }
+  // @note The output must be scalar.
+  double backward(double inputValue) {
+    Scalar::setValue( getInput(), inputValue );
     forwardProp(m_graph, getOutput());
-    return Scalar::value( getOutput() );
+    map<Variable*, Gradient> grad_table{ backProp_walk(m_graph, getOutput()) };
+    const Gradient& grad_input{ grad_table.at( &getInput()) };
+    assert(grad_input.size() == 1);
+    return grad_input[0];
   }
   void printGraph() {
     auto customPrint{ [] (Variable* varptr) -> void {

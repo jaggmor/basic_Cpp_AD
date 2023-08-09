@@ -97,6 +97,19 @@ void testJoiningUnits() {
   }
 }
 
+void testBackprop() {
+  // Let's make a simple function and test calculating its derivative.
+  constexpr auto f { [](const double x) { return x*x*x - x*x + x - 5;} };
+  constexpr auto fp{ [](const double x) { return 3*x*x - 2*x + 1 ;} };
+  Unit fg{Scalar{"x"}};
+  fg.xpn(3)
+    .sub(Unit{Scalar{"x"}}.xpn(2))
+    .add(Unit{Scalar{"x"}}.xpn(1))
+    .sub(5);
+  equals(fg, f);
+  std::cout << "Does the derivative work...: " << fg.backward(10.) << " ?= " << fp(10.) << '\n';
+}
+
 #if FIXED_COPY_CONSTRUCTOR
 void testConstructFromRef()
 {
@@ -139,4 +152,5 @@ int main() {
   testMultiUnit();
   testJoiningUnits();
   std::cout << "Test Complete!\n";
+  testBackprop();
 }

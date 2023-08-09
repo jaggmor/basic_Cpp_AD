@@ -11,7 +11,7 @@
 #include <cassert>
 #include <unordered_map>
 
-using v_ptr = std::unique_ptr<Variable>;
+using uvptr = std::unique_ptr<Variable>;
 using Gradient = std::vector<double>;
 
 template <typename V, typename K>
@@ -66,7 +66,7 @@ static void updateVarBinaryOp(const std::vector<Variable*>& inputs, Variable& va
  * @param variables Vector of the variables in the graph which should be updated.
  * @return The number of variables that were updated.
  */
-static int update_vars_in_graph(DirectedGraph<Variable*>& graph, std::vector<v_ptr>& variables)
+static int update_vars_in_graph(DirectedGraph<Variable*>& graph, std::vector<uvptr>& variables)
 {
   int variables_updated{ 0 };
 
@@ -127,11 +127,11 @@ void buildAddGraphAndEvaluateIt()
   a->setValue(1.0);
   b->setValue(2.0);
 
-  std::vector<v_ptr> params{};  
+  std::vector<uvptr> params{};  
   params.push_back(std::move(a));
   params.push_back(std::move(b));
 
-  std::vector<v_ptr> inter{};
+  std::vector<uvptr> inter{};
   inter.push_back(std::move(res1));
   inter.push_back(std::move(res2));
   inter.push_back(std::move(res3));
@@ -328,11 +328,11 @@ void buildSubGraphEvaluateAndBackpropIt()
   a->setValue(1.0);
   b->setValue(2.0);
 
-  std::vector<v_ptr> params{};  
+  std::vector<uvptr> params{};  
   params.push_back(std::move(a));
   params.push_back(std::move(b));
 
-  std::vector<v_ptr> inter{};
+  std::vector<uvptr> inter{};
   inter.push_back(std::move(res1));
   inter.push_back(std::move(res2));
   inter.push_back(std::move(res3));
@@ -389,7 +389,7 @@ void buildPolynomialGraph()
 
   x->setValue(3.0);
 
-  std::vector<v_ptr> inter{};
+  std::vector<uvptr> inter{};
   inter.push_back(std::move(res1));
   inter.push_back(std::move(res2));
   inter.push_back(std::move(res3));
