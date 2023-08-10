@@ -11,14 +11,14 @@ using Gradient = std::vector<double>;
 std::unique_ptr<Variable> ScalarSub::operator()(const Variable& minuend,
 					      const Variable& subtrahend) const
 {
-  return std::make_unique<Scalar>(*this, minuend.getValue() - subtrahend.getValue());
+  return std::make_unique<Scalar>(*this, Scalar::value(minuend) - Scalar::value(subtrahend));
 }
 
 std::unique_ptr<Variable> ScalarSub::operator()(DirectedGraph<Variable*>& graph,
 					      Variable& minuend, Variable& subtrahend) const
 {
   // Create the resulting scalar on the heap.
-  auto res{ std::make_unique<Scalar>(*this, minuend.getValue() - subtrahend.getValue()) };
+  auto res{ std::make_unique<Scalar>(*this, Scalar::value(minuend) - Scalar::value(subtrahend)) };
 
   // Add connections to the graph
   graph.addConnection(&minuend, res.get());

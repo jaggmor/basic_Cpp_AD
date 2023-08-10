@@ -7,7 +7,7 @@
 using Gradient = std::vector<double>;
 
 std::unique_ptr<Variable> ScalarAbs::operator()(const Variable& input) const
-{ return std::make_unique<Scalar>(*this, std::abs( input.getValue() ) ); }
+{ return std::make_unique<Scalar>(*this, std::abs( Scalar::value(input) ) ); }
 
 std::unique_ptr<Variable> ScalarAbs::operator()(DirectedGraph<Variable*>& graph, Variable& input) const
 {

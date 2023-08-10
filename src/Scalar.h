@@ -21,9 +21,6 @@ public:
 	 double value=0.0, bool flag=false);
   Scalar(const Operation& operation, double value=0.0, bool flag=false);
   
-  void setValue(double value) override { *m_memory = value; };
-  double getValue() const override { return *m_memory; };
-  
   constexpr int getDimension() const { return m_dimension; };
 
   // Kind of depreciated...

@@ -11,13 +11,13 @@ using Gradient = std::vector<double>;
 std::unique_ptr<Variable> ScalarDiv::operator()(const Variable& dividend,
 					      const Variable& divisor) const
 {
-  return std::make_unique<Scalar>(*this, dividend.getValue() / divisor.getValue());
+  return std::make_unique<Scalar>(*this, Scalar::value(dividend) / Scalar::value(divisor) );
 }
 
 std::unique_ptr<Variable> ScalarDiv::operator()(DirectedGraph<Variable*>& graph, Variable& dividend, Variable& divisor) const
 {
   // Create the resulting scalar on the heap.
-  auto res{ std::make_unique<Scalar>(*this, dividend.getValue() / divisor.getValue()) };
+  auto res{ std::make_unique<Scalar>(*this, Scalar::value(dividend) / Scalar::value(divisor) ) };
 
   // Add connections to the graph
   graph.addConnection(&dividend, res.get());

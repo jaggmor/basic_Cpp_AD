@@ -11,13 +11,13 @@ using Gradient = std::vector<double>;
 
 std::unique_ptr<Variable> ScalarMul::operator()(const Variable& input1, const Variable& input2) const
 {
-  return std::make_unique<Scalar>(*this, input1.getValue() * input2.getValue());
+  return std::make_unique<Scalar>(*this, Scalar::value(input1) * Scalar::value(input2));
 }
 
 std::unique_ptr<Variable> ScalarMul::operator()(DirectedGraph<Variable*>& graph, Variable& input1, Variable& input2) const
 {
   // Create the resulting scalar on the heap.
-  auto res{ std::make_unique<Scalar>(*this, input1.getValue() * input2.getValue()) };
+  auto res{ std::make_unique<Scalar>(*this, Scalar::value(input1) * Scalar::value(input2)) };
 
   // Add connections to the graph
   graph.addConnection(&input1, res.get());

@@ -7,14 +7,12 @@
 #include "DirectedGraph.h"
 #include "Operation.h"
 #include <vector>
-#include <functional>
 #include <memory>
 #include <string>
 
-
 class Variable
 {
-  using vref = Variable*;
+  using vptr = Variable*;
 private:
   const std::string m_name{""};
   const Operation& m_operation;
@@ -40,8 +38,6 @@ protected:
   
   
 public:
-  virtual void setValue(double value) = 0;
-  virtual double getValue() const = 0;      
   /**
    * @brief Redirects the memory pointed to, deleting it in the process, to another memory block.
    * @param 
@@ -74,7 +70,7 @@ public:
    * @param graph Directed graph from which the consumers are given.
    * @return Reference to the vector of variable references.
    */
-  const std::vector<vref>& getConsumers(const DirectedGraph<vref>& graph)
+  const std::vector<vptr>& getConsumers(const DirectedGraph<vptr>& graph)
   { return graph.getNodeConsumers(this); }
   
  /**
@@ -82,7 +78,7 @@ public:
   * @param graph Directed graph from which the inputs are given.
   * @return Reference to the vector of variable references.
   */
-  const std::vector<vref>& getInputs(const DirectedGraph<vref>& graph)
+  const std::vector<vptr>& getInputs(const DirectedGraph<vptr>& graph)
   { return graph.getNodeInputs(this); }  
   
   /**

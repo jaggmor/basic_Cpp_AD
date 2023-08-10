@@ -123,9 +123,9 @@ void buildAddGraphAndEvaluateIt()
   }};
 
   graph.printGraph(customPrint);
-  
-  a->setValue(1.0);
-  b->setValue(2.0);
+
+  Scalar::setValue(*a, 1.0);
+  Scalar::setValue(*b, 2.0);
 
   std::vector<uvptr> params{};  
   params.push_back(std::move(a));
@@ -325,8 +325,8 @@ void buildSubGraphEvaluateAndBackpropIt()
 
   graph.printGraph(customPrint);
   
-  a->setValue(1.0);
-  b->setValue(2.0);
+  Scalar::setValue(*a, 1.0);
+  Scalar::setValue(*b, 2.0);
 
   std::vector<uvptr> params{};  
   params.push_back(std::move(a));
@@ -387,7 +387,7 @@ void buildPolynomialGraph()
 
   graph.printGraph(customPrint);
 
-  x->setValue(3.0);
+  Scalar::setValue(*x, 3.0);
 
   std::vector<uvptr> inter{};
   inter.push_back(std::move(res1));
@@ -557,13 +557,13 @@ void testForwardProp()
   }};
   graph.printGraph(customPrint);
 
-  assert(y->getValue() - f(x->getValue()) < 1e-4
+  assert(Scalar::value(*y) - f(Scalar::value(*x)) < 1e-4
 	       && "The function should evaluate to this value");
-  x->setValue(1.0);
+  Scalar::setValue(*x, 1.0);
   forwardProp(graph, *y);
-  assert(y->getValue() - f(x->getValue()) < 1e-4
+  assert(Scalar::value(*y) - f(Scalar::value(*x)) < 1e-4
 	       && "The function should now evaluate to this value after FP.");
-  std::cout << "New value is: " << y->getValue() << '\n';
+  std::cout << "New value is: " << Scalar::value(*y) << '\n';
 }
 
 

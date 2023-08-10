@@ -19,14 +19,14 @@ int main()
   Scalar s_dea{input, 0.0};
   Scalar s_def{input, 1.};
 
-  assert(s_dea.getValue() == 0.0 && "Default init was not 0.0");
-  assert(s_def.getValue() == 1.0 && "Defined init set to 1.0 was not 1.o as specified");
+  assert(Scalar::value(s_dea) == 0.0 && "Default init was not 0.0");
+  assert(Scalar::value(s_def) == 1.0 && "Defined init set to 1.0 was not 1.o as specified");
 
   // Note that static asserts can only be called on compile time constants.
   static_assert(s_dea.getDimension() == 0, "Dimension should be equal to 0 for scalars");
 
-  s_def.setValue(2.0);
-  assert(s_def.getValue() == 2.0);
+  Scalar::setValue(s_def, 2.0);
+  assert(Scalar::value(s_def) == 2.0);
 
   // Test that the operations are working as they should.
   Scalar x{ "x", input, 3.0 };
@@ -46,12 +46,12 @@ int main()
 
   // Test that the memory handling from Variable.h works correctly.
   auto ptr{x.getMemoryPtr()};
-  assert(*ptr == x.getValue() && "Dereferenced raw pointer should point to the same value as function");
+  assert(*ptr == Scalar::value(x) && "Dereferenced raw pointer should point to the same value as function");
 
   std::unique_ptr<double> new_memory{ std::make_unique<double>(5.0)};
   std::vector<int> new_lengths{};
   x.overwriteMemory(std::move(new_memory), new_lengths);
-  assert(x.getValue() == 5.0 && "Memory was not successfully copied into the variable.");
+  assert(Scalar::value(x) == 5.0 && "Memory was not successfully copied into the variable.");
 
   // Test that the lengths of all these Scalars are all 0.
   assert(x.getLengths().size() == x.getDimension() && y.getLengths().size() == y.getDimension() && "Lengths should be empty since it has dim=0.");

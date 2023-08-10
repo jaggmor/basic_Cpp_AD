@@ -11,7 +11,7 @@ using Gradient = std::vector<double>;
 
 std::unique_ptr<Variable> ScalarXpn::operator()(const Variable& base, const Variable& exponent) const
 {
-  return std::make_unique<Scalar>(*this, std::pow(base.getValue(), exponent.getValue()) );
+  return std::make_unique<Scalar>(*this, std::pow(Scalar::value(base), Scalar::value(exponent)) );
 }
 
 std::unique_ptr<Variable> ScalarXpn::operator()(DirectedGraph<Variable*>& graph,
